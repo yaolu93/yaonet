@@ -62,6 +62,316 @@ ansible/
     └── 其他 *.md 文件           《 其他文档
 ```
 
+## Ansible 基礎概念教學
+
+本節以 yaonet 項目的真實配置為例，講解 Ansible 的核心概念。
+
+---
+
+### Ansible 是什麼？
+
+Ansible 是一個**自動化部署工具**，透過 SSH 連進遠端伺服器並執行一系列任務（安裝軟件、配置文件、啟動服務），**不需要**在目標伺服器上安裝任何 agent。
+
+**核心優勢：**
+- **冪等性**（Idempotent）：重複執行同一 Playbook 結果相同，不會重複安裝或破壞現有配置
+- **無 Agent**：只需 SSH，目標伺服器零依賴
+- **YAML 語法**：可讀性高，易於維護
+
+---
+
+### 核心文件角色對照
+
+| 文件/目錄 | 概念 | 本項目示例 |
+|-----------|------|-----------|
+| `ansible.cfg` | 全局配置 | SSH 用戶、日誌路徑、緩存設置 |
+| `inventory` | 主機清單 | localhost + 192.168.118.131 |
+| `site.yml` | 主 Playbook | 完整部署入口 |
+| `app-deploy.yml` | 子 Playbook | 只部署應用層 |
+| `group_vars/all.yml` | 全局變數 | `app_name`, `app_user`, `venv_path` 等 |
+| `group_vars/dbservers.yml` | 分組變數 | 僅數據庫服務器的配置 |
+| `roles/` | 角色集合 | common、app、postgres、redis、nginx 等 |
+
+---
+
+### 概念一：Inventory（主機清單）
+
+Inventory 定義**要操作哪些機器**，以及如何連接它們。
+
+```ini
+# ansible/inventory 節選
+
+[all:vars]
+ansible_user = yao               # 所有主機的默認 SSH 用戶
+
+[webservers_local]
+localhost ansible_connection=local   # 本機：不走 SSH，直接本地執行
+
+[webservers_remote]
+192.168.118.131 ansible_user=yao    # 遠端主機
+
+# 分組繼承：webservers 同時包含 local 和 remote 兩個子組
+[webservers:children]
+webservers_local
+webservers_remote
+```
+
+**要點：**
+- `[組名]` 定義主機組，Playbook 可按組指定執行範圍
+- `ansible_connection=local` 跳過 SSH，用於本機部署
+- `[組名:children]` 實現分組繼承，避免重複配置
+
+---
+
+### 概念二：Playbook（劇本）
+
+Playbook 定義**按什麼順序、在哪些機器上、執行哪些任務**。
+
+```yaml
+# ansible/site.yml — 完整部署入口
+
+- name: Common setup for all servers
+  hosts: all          # 在「所有主機」執行
+  become: yes         # 使用 sudo 提權
+  roles:
+    - common          # 調用 roles/common/ 下的任務
+
+- name: Setup PostgreSQL databases
+  hosts: dbservers    # 只在「dbservers 組」執行
+  become: yes
+  roles:
+    - postgres
+
+- name: Deploy Flask application
+  hosts: webservers   # 只在「webservers 組」執行
+  become: yes
+  roles:
+    - app
+
+- name: Setup Nginx reverse proxy
+  hosts: webservers
+  become: yes
+  roles:
+    - nginx
+```
+
+**要點：**
+- 一個 Playbook 由多個 **Play** 組成
+- 每個 Play = `hosts`（目標）+ `roles`/`tasks`（要做什麼）
+- Play 按順序執行，前一個失敗則後面的不執行
+
+---
+
+### 概念三：Role（角色）
+
+Role 是**模塊化的任務集合**，讓配置可重用。每個 Role 的標準目錄結構：
+
+```
+roles/app/
+├── tasks/
+│   └── main.yml     ← 主要任務列表（必備）
+├── handlers/
+│   └── main.yml     ← 事件處理器（如重啟服務）
+├── templates/       ← Jinja2 模板（.j2 後綴）
+├── files/           ← 靜態文件（直接複製）
+└── vars/
+    └── main.yml     ← 角色專用變數
+```
+
+本項目有 6 個 Role，各司其職：
+
+| Role | 職責 |
+|------|------|
+| `common` | 系統基礎：安裝工具包、建立 `yaonet` 用戶、防火牆 |
+| `postgres` | 安裝 PostgreSQL、建立 `yaonet_db` 數據庫 |
+| `redis` | 安裝 Redis、設置密碼和持久化 |
+| `elasticsearch` | 安裝搜索引擎、配置 JVM |
+| `app` | 部署 Flask 代碼、建立虛擬環境、啟動 Gunicorn |
+| `nginx` | 安裝 Nginx、配置反向代理和 SSL |
+
+---
+
+### 概念四：Task（任務）與 Module（模塊）
+
+Task 是 Ansible 最小執行單位，每個 Task 調用一個 **Module** 完成具體操作。
+
+```yaml
+# roles/common/tasks/main.yml 節選
+
+# apt 模塊：管理 Debian 系統的軟件包
+- name: Install basic system packages
+  apt:
+    name:
+      - curl
+      - vim
+      - python3-pip
+      - supervisor
+    state: present
+  when: ansible_os_family == "Debian"   # 條件判斷
+
+# user 模塊：管理系統用戶
+- name: Create application user
+  user:
+    name: "{{ app_user }}"              # {{ }} 引用變數
+    shell: /bin/bash
+    home: "{{ app_home }}"
+
+# file 模塊：管理文件和目錄
+- name: Create application directories
+  file:
+    path: "{{ item }}"                  # 配合 loop 迭代
+    state: directory
+    owner: "{{ app_user }}"
+    mode: "0755"
+  loop:
+    - "{{ app_home }}"
+    - "{{ app_path }}"
+    - "{{ log_dir }}"
+```
+
+**常用 Module 速查：**
+
+| Module | 用途 | 本項目示例 |
+|--------|------|-----------|
+| `apt` | 安裝/卸載軟件包 | 安裝 nginx、postgresql |
+| `user` | 管理系統用戶 | 建立 `yaonet` 用戶 |
+| `file` | 管理文件/目錄 | 建立應用目錄 |
+| `template` | 渲染 Jinja2 模板 | 生成 `.env`、nginx.conf |
+| `copy` | 複製文件 | 複製靜態配置 |
+| `git` | Git 操作 | Clone 應用代碼 |
+| `pip` | 安裝 Python 包 | `pip install -r requirements.txt` |
+| `systemd` | 管理 systemd 服務 | 啟動/重啟 gunicorn |
+| `shell` | 執行 shell 命令 | `flask db upgrade` |
+
+---
+
+### 概念五：Variables（變數）
+
+變數讓配置**可複用、可環境切換**。變數優先級（從低到高）：
+
+```
+group_vars/all.yml          ← 最低：所有主機共用
+group_vars/{group}.yml      ← 中：只對某組有效
+host_vars/{hostname}.yml    ← 較高：只對某主機有效
+命令行 -e VAR=value         ← 最高：覆蓋一切
+```
+
+```yaml
+# ansible/group_vars/all.yml 節選
+app_name: yaonet
+app_user: yaonet
+app_path: "/home/{{ app_user }}/yaonet"   # 變數可引用其他變數
+venv_path: "/home/{{ app_user }}/venv"
+python_version: "3.12"
+postgres_version: 15
+```
+
+在 Task 中用 `{{ 變數名 }}` 引用：
+```yaml
+- name: Create Python virtual environment
+  command: "python{{ python_version }} -m venv {{ venv_path }}"
+```
+
+---
+
+### 概念六：Handler（事件處理器）
+
+Handler 是**只在被觸發且任務有實際變更時才執行的特殊 Task**，通常用於重啟服務。
+
+```yaml
+# roles/app/handlers/main.yml
+- name: restart gunicorn
+  systemd:
+    name: gunicorn
+    state: restarted
+    daemon_reload: yes
+
+- name: reload gunicorn
+  systemd:
+    name: gunicorn
+    state: reloaded
+```
+
+在 Task 中用 `notify` 觸發：
+```yaml
+# roles/nginx/tasks/main.yml
+- name: Create Nginx site configuration
+  template:
+    src: yaonet.conf.j2
+    dest: /etc/nginx/sites-available/yaonet
+  notify: test and reload nginx   # 只有配置真的改了才重啟
+```
+
+**關鍵行為：** 即使多個 Task 都 `notify` 同一個 Handler，Handler 在整個 Play 結束後**只執行一次**，避免不必要的重啟。
+
+---
+
+### 概念七：Template（模板）
+
+`.j2` 文件是 **Jinja2** 模板，Ansible 在複製到遠端前會自動替換其中的變數。
+
+```
+# 模板中           →    渲染後
+{{ app_name }}    →    yaonet
+{{ postgres_password }}  →  實際密碼值
+{% if ssl_enabled %}  →  條件生成不同配置塊
+{% for item in list %}  →  循環生成配置
+```
+
+---
+
+### 執行流程總覽
+
+```
+ansible-playbook site.yml -i inventory
+  │
+  ├─ 讀取 inventory → 確定目標主機列表
+  ├─ 讀取 group_vars → 載入變數
+  │
+  └─ 按 Play 順序執行：
+       Play 1: hosts=all     → common role  → 系統基礎配置
+       Play 2: hosts=dbservers → postgres role → 數據庫初始化
+       Play 3: hosts=cacheservers → redis role → 緩存服務
+       Play 4: hosts=searchservers → elasticsearch role → 搜索引擎
+       Play 5: hosts=webservers → app role → Flask 應用部署
+       Play 6: hosts=webservers → nginx role → 反向代理
+            │
+            └─ 每個 Task 用 Module 操作遠端系統
+                 有變更 → 觸發 Handler（重啟服務）
+                 無變更 → 跳過 Handler（冪等）
+```
+
+---
+
+### 常用執行命令速查
+
+```bash
+# 完整部署
+ansible-playbook ansible/site.yml -i ansible/inventory
+
+# 只部署應用層（不動數據庫）
+ansible-playbook ansible/app-deploy.yml -i ansible/inventory
+
+# 只在本機執行
+ansible-playbook ansible/site.yml -i ansible/inventory -l webservers_local
+
+# 語法檢查（不執行）
+ansible-playbook ansible/site.yml --syntax-check
+
+# 預演模式（看會做什麼但不實際執行）
+ansible-playbook ansible/site.yml --check
+
+# 測試主機連通性
+ansible all -i ansible/inventory -m ping
+
+# 查看所有主機
+ansible all -i ansible/inventory --list-hosts
+
+# 增加輸出詳細度
+ansible-playbook ansible/site.yml -i ansible/inventory -vv
+```
+
+---
+
 ## Prerequisites
 
 1. **Ansible**: Install Ansible on your control machine
