@@ -4,8 +4,8 @@
 # Run on web server to verify database configuration
 
 DB_HOST=${1:-localhost}
-DB_USER=${2:-microblog_user}
-DB_NAME=${3:-microblog_db}
+DB_USER=${2:-yaonet_user}
+DB_NAME=${3:-yaonet_db}
 
 echo "Testing PostgreSQL connection..."
 echo "Host: $DB_HOST"

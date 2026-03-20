@@ -7,7 +7,7 @@ elasticsearch_port: 9200
 elasticsearch_bind: 0.0.0.0
 
 # Cluster settings
-elasticsearch_cluster_name: microblog-cluster
+elasticsearch_cluster_name: yaonet-cluster
 elasticsearch_node_name: "{{ inventory_hostname }}"
 elasticsearch_node_master: yes
 elasticsearch_node_data: yes

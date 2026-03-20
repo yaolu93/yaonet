@@ -4,7 +4,7 @@
 
 set -e
 
-PROJECTDIR="/home/yao/fromGithub/microblog"
+PROJECTDIR="/home/yao/fromGithub/yaonet"
 cd "$PROJECTDIR"
 
 echo "════════════════════════════════════════════════════════════════"
@@ -74,6 +74,6 @@ echo "✅ 用户创建完成"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 echo "现在可以登录应用:"
-echo "  URL: https://microblog-613015340025.us-central1.run.app"
+echo "  URL: https://yaonet-613015340025.us-central1.run.app"
 echo "  用户名: $username"
 echo ""

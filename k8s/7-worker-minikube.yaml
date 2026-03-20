@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: worker
-  namespace: microblog
+  namespace: yaonet
 spec:
   replicas: 1
   selector:
@@ -15,15 +15,15 @@ spec:
     spec:
       containers:
       - name: worker
-        image: microblog:latest
+        image: yaonet:latest
         imagePullPolicy: Never
         command: ["./boot.sh"]
-        args: ["rq", "worker", "microblog-tasks"]
+        args: ["rq", "worker", "yaonet-tasks"]
         envFrom:
         - configMapRef:
-            name: microblog-config
+            name: yaonet-config
         - secretRef:
-            name: microblog-secret
+            name: yaonet-secret
         env:
         - name: RUN_MIGRATIONS
           value: "false"

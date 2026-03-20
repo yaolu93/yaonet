@@ -24,7 +24,7 @@ echo "Installing/ensuring requirements..."
 pip install --upgrade pip >/dev/null
 pip install -r "$BASEDIR/requirements.txt"
 
-export FLASK_APP=microblog.py
+export FLASK_APP=yaonet.py
 export FLASK_ENV=production
 
 if [ -z "${DATABASE_URL:-}" ]; then
@@ -53,11 +53,11 @@ WEB_PORT=${WEB_PORT:-8000}
 WEB_WORKERS=${WEB_WORKERS:-4}
 
 echo "Starting gunicorn (port $WEB_PORT, $WEB_WORKERS workers)"
-nohup gunicorn -b 0.0.0.0:${WEB_PORT} -w ${WEB_WORKERS} microblog:app > "$BASEDIR/logs/gunicorn.log" 2>&1 &
+nohup gunicorn -b 0.0.0.0:${WEB_PORT} -w ${WEB_WORKERS} yaonet:app > "$BASEDIR/logs/gunicorn.log" 2>&1 &
 echo $! > "$BASEDIR/tmp/gunicorn.pid"
 
 echo "Starting RQ worker (background)..."
-nohup rq worker microblog-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
+nohup rq worker yaonet-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
 echo $! > "$BASEDIR/tmp/rq_worker.pid"
 
 echo "All done. Logs: $BASEDIR/logs"

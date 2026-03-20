@@ -54,7 +54,7 @@ chmod +x cloud-deployment/scripts/deploy-to-docker-hub.sh
 chmod +x cloud-deployment/scripts/deploy-to-cloud-run.sh
 cp cloud-deployment/config/.env.gcp.example .env.gcp
 nano .env.gcp  # 编辑填入数据库和Redis URL
-./cloud-deployment/scripts/deploy-to-cloud-run.sh YOUR_GCP_PROJECT YOUR_DOCKER_USERNAME/microblog:latest
+./cloud-deployment/scripts/deploy-to-cloud-run.sh YOUR_GCP_PROJECT YOUR_DOCKER_USERNAME/yaonet:latest
 ```
 
 ---
@@ -106,7 +106,7 @@ docs/CLOUD_DEPLOYMENT_GUIDE.md
 ### 方式1: 完全自动化 (推荐)
 ```bash
 # 从项目根目录运行
-cd /path/to/microblog
+cd /path/to/yaonet
 ./cloud-deployment/scripts/deploy-to-cloud-run.sh PROJECT_ID USER/IMAGE:TAG
 ```
 
@@ -119,13 +119,13 @@ cd /path/to/microblog
 ./cloud-deployment/scripts/deploy-to-docker-hub.sh YOUR_USERNAME latest
 
 # Step 3: 部署应用
-./cloud-deployment/scripts/deploy-to-cloud-run.sh YOUR_PROJECT YOUR_USERNAME/microblog:latest
+./cloud-deployment/scripts/deploy-to-cloud-run.sh YOUR_PROJECT YOUR_USERNAME/yaonet:latest
 ```
 
 ### 方式3: 手动配置 (深度定制)
 ```bash
 # 使用Dockerfile手动构建
-docker build -f cloud-deployment/Dockerfile -t microblog:latest .
+docker build -f cloud-deployment/Dockerfile -t yaonet:latest .
 
 # 参考scripts/中的脚本逻辑进行自定义配置
 # 参考docs/CLOUD_DEPLOYMENT_GUIDE.md的详细步骤
@@ -231,7 +231,7 @@ cd cloud-deployment/scripts/
 **A:** 
 Dockerfile 在 cloud-deployment/ 根目录
 ```bash
-docker build -f cloud-deployment/Dockerfile -t microblog:latest .
+docker build -f cloud-deployment/Dockerfile -t yaonet:latest .
 ```
 
 ---

@@ -7,26 +7,26 @@
   hosts: localhost
   become: yes
   vars:
-    app_user: microblog
-    app_group: microblog
-    app_path: /home/microblog/microblog
-    venv_path: /home/microblog/venv
+    app_user: yaonet
+    app_group: yaonet
+    app_path: /home/yaonet/yaonet
+    venv_path: /home/yaonet/venv
     python_version: "3.11"
-    log_dir: /var/log/microblog
-    postgres_user: microblog_user
-    postgres_password: microblog_secure_pwd_2024
+    log_dir: /var/log/yaonet
+    postgres_user: yaonet_user
+    postgres_password: yaonet_secure_pwd_2024
 
   tasks:
     - name: "Phase 1: 检查本地源代码"
       block:
         - name: Check if local source exists
           stat:
-            path: /home/yao/fromGithub/microblog/requirements.txt
+            path: /home/yao/fromGithub/yaonet/requirements.txt
           register: source_check
 
         - name: Fail if source not found
           fail:
-            msg: "❌ 本地源代码不存在: /home/yao/fromGithub/microblog/"
+            msg: "❌ 本地源代码不存在: /home/yao/fromGithub/yaonet/"
           when: not source_check.stat.exists
 
         - name: Show source found message
@@ -45,13 +45,13 @@
 
         - name: Sync application code from local source
           shell: |
-            rsync -av --delete /home/yao/fromGithub/microblog/ /home/microblog/microblog/
+            rsync -av --delete /home/yao/fromGithub/yaonet/ /home/yaonet/yaonet/
           ignore_errors: yes
           register: rsync_result
 
         - name: Copy if rsync not installed
           shell: |
-            cp -r /home/yao/fromGithub/microblog/* /home/microblog/microblog/
+            cp -r /home/yao/fromGithub/yaonet/* /home/yaonet/yaonet/
           when: rsync_result is failed
           ignore_errors: yes
 
@@ -99,11 +99,11 @@
         - name: Create .env file
           shell: |
             cat > {{ app_path }}/.env <<EOF
-            FLASK_APP=microblog.py
+            FLASK_APP=yaonet.py
             FLASK_ENV=production
             FLASK_DEBUG=0
             SECRET_KEY=dev-secret-key-change-in-production
-            DATABASE_URL=postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost/microblog_db
+            DATABASE_URL=postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost/yaonet_db
             REDIS_URL=redis://:redis_secure_pwd_2024@localhost:6379/0
             ELASTICSEARCH_URL=http://localhost:9200
             MAIL_SERVER=smtp.gmail.com
@@ -115,7 +115,7 @@
             LANGUAGES={'en': 'English', 'es': 'Español', 'zh': '简体中文'}
             MS_TRANSLATOR_KEY=your-translator-key
             LOG_TO_STDOUT=1
-            LOG_FILE={{ log_dir }}/microblog.log
+            LOG_FILE={{ log_dir }}/yaonet.log
             EOF
             chown {{ app_user }}:{{ app_group }} {{ app_path }}/.env
             chmod 600 {{ app_path }}/.env
@@ -133,15 +133,15 @@
             delay: 2
             timeout: 30
 
-        - name: Check if microblog_db exists
+        - name: Check if yaonet_db exists
           shell: |
-            sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -w microblog_db
+            sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -w yaonet_db
           register: db_check
           ignore_errors: yes
 
         - name: Create database if not exists
           shell: |
-            sudo -u postgres psql -c "CREATE DATABASE microblog_db OWNER microblog_user;" 2>&1
+            sudo -u postgres psql -c "CREATE DATABASE yaonet_db OWNER yaonet_user;" 2>&1
           when: db_check.rc != 0
           ignore_errors: yes
 
@@ -154,8 +154,8 @@
             chdir: "{{ app_path }}"
             executable: /bin/bash
           environment:
-            FLASK_APP: microblog.py
-            DATABASE_URL: postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost/microblog_db
+            FLASK_APP: yaonet.py
+            DATABASE_URL: postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost/yaonet_db
           become_user: "{{ app_user }}"
           ignore_errors: yes
 

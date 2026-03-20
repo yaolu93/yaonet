@@ -25,7 +25,7 @@ echo "✅ Docker 環境已配置"
 # 【3】構建鏡像
 echo -e "\n[3] 構建 Docker 鏡像..."
 cd "$(dirname "$0")/.."
-docker build -t microblog:latest .
+docker build -t yaonet:latest .
 echo "✅ 鏡像構建完成"
 
 # 【4】部署 Kubernetes 資源
@@ -57,18 +57,18 @@ echo "✅ 所有資源部署完成"
 # 【5】等待部署就緒
 echo -e "\n[5] 等待 Pod 就緒（最多 120 秒）..."
 echo "   等待 PostgreSQL..."
-kubectl wait --for=condition=ready pod -l app=postgres -n microblog --timeout=180s 2>/dev/null || {
+kubectl wait --for=condition=ready pod -l app=postgres -n yaonet --timeout=180s 2>/dev/null || {
     echo "⚠️  PostgreSQL 超時。檢查日誌："
-    kubectl logs -n microblog -l app=postgres --tail=20
+    kubectl logs -n yaonet -l app=postgres --tail=20
 }
 
 echo "   等待 Redis..."
-kubectl wait --for=condition=ready pod -l app=redis -n microblog --timeout=120s 2>/dev/null || true
+kubectl wait --for=condition=ready pod -l app=redis -n yaonet --timeout=120s 2>/dev/null || true
 
 echo "   等待 Web..."
-kubectl wait --for=condition=ready pod -l app=web -n microblog --timeout=180s 2>/dev/null || {
+kubectl wait --for=condition=ready pod -l app=web -n yaonet --timeout=180s 2>/dev/null || {
     echo "⚠️  Web Pod 超時。檢查日誌："
-    kubectl logs -n microblog -l app=web --tail=30
+    kubectl logs -n yaonet -l app=web --tail=30
 }
 
 echo "✅ 所有 Pod 就緒"
@@ -78,10 +78,10 @@ echo -e "\n[6] 部署完成！訪問應用的方式："
 echo ""
 
 SERVICE_IP=$(minikube ip)
-NODEPORT=$(kubectl get svc -n microblog web -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "unknown")
+NODEPORT=$(kubectl get svc -n yaonet web -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "unknown")
 
 echo "   方式 1: Port Forward（推薦）"
-echo "   $ kubectl port-forward -n microblog svc/web 8000:8000"
+echo "   $ kubectl port-forward -n yaonet svc/web 8000:8000"
 echo "   訪問：http://localhost:8000"
 echo ""
 
@@ -90,7 +90,7 @@ echo "   訪問：http://${SERVICE_IP}:${NODEPORT}"
 echo ""
 
 echo "   方式 3: 自動打開 Minikube 服務"
-echo "   $ minikube service web -n microblog"
+echo "   $ minikube service web -n yaonet"
 echo ""
 
 # 【7】顯示有用的命令
@@ -99,23 +99,23 @@ echo " 常用命令"
 echo "================================================"
 echo ""
 echo "查看 Pod 狀態："
-echo "  kubectl get pods -n microblog"
+echo "  kubectl get pods -n yaonet"
 echo ""
 echo "查看服務："
-echo "  kubectl get svc -n microblog"
+echo "  kubectl get svc -n yaonet"
 echo ""
 echo "查看 Web 日誌："
-echo "  kubectl logs -f -n microblog -l app=web"
+echo "  kubectl logs -f -n yaonet -l app=web"
 echo ""
 echo "進入 Web Pod Shell："
-echo "  kubectl exec -it -n microblog deployment/web -- /bin/bash"
+echo "  kubectl exec -it -n yaonet deployment/web -- /bin/bash"
 echo ""
 echo "重啟部署（編輯代碼後）："
-echo "  docker build -t microblog:latest ."
-echo "  kubectl rollout restart deployment/web -n microblog"
+echo "  docker build -t yaonet:latest ."
+echo "  kubectl rollout restart deployment/web -n yaonet"
 echo ""
 echo "刪除所有資源："
-echo "  kubectl delete namespace microblog"
+echo "  kubectl delete namespace yaonet"
 echo ""
 echo "================================================"
 echo "✅ 部署完成！"

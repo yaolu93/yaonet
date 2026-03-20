@@ -34,7 +34,7 @@ gcloud services enable cloud-build.googleapis.com
 ```bash
 # 设置区域（选择离你最近的）
 export REGION="asia-east1"  # 或 us-central1, europe-west1 等
-export REPOSITORY="microblog"
+export REPOSITORY="yaonet"
 
 # 创建仓库
 gcloud artifacts repositories create $REPOSITORY \
@@ -61,16 +61,16 @@ docker ps  # 如果成功，没有错误信息
 ### 构建镜像并推送到 Artifact Registry
 
 ```bash
-cd /home/yao/fromGithub/microblog
+cd /home/yao/fromGithub/yaonet
 
 # 定义镜像的完整路径
-export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/microblog:latest"
+export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/yaonet:latest"
 
 # 构建镜像
 docker build -t $IMAGE .
 
 # 验证镜像已构建
-docker images | grep microblog
+docker images | grep yaonet
 
 # 推送镜像到 Artifact Registry
 docker push $IMAGE
@@ -97,7 +97,7 @@ gcloud builds list --region=$REGION
 
 ```bash
 # 设置集群参数
-export CLUSTER_NAME="microblog-cluster"
+export CLUSTER_NAME="yaonet-cluster"
 export ZONE="asia-east1-a"  # 选择 REGION 内的可用区
 export NUM_NODES=2
 export MACHINE_TYPE="n1-standard-2"  # 生产推荐：2 核心 CPU，7.5GB 内存
@@ -157,33 +157,33 @@ gcloud container clusters create $CLUSTER_NAME \
 
 ```bash
 # 创建服务账户（如果尚未创建）
-gcloud iam service-accounts create gke-microblog-sa \
+gcloud iam service-accounts create gke-yaonet-sa \
   --display-name="GKE Microblog Service Account"
 
 # 授予 Artifact Registry 读取权限
 gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:gke-microblog-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --member="serviceAccount:gke-yaonet-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/artifactregistry.reader"
 
 # 创建密钥文件
 gcloud iam service-accounts keys create key.json \
-  --iam-account=gke-microblog-sa@${PROJECT_ID}.iam.gserviceaccount.com
+  --iam-account=gke-yaonet-sa@${PROJECT_ID}.iam.gserviceaccount.com
 
 # 在 Kubernetes 集群中创建 Secret
-kubectl create namespace microblog
+kubectl create namespace yaonet
 
 kubectl create secret docker-registry gcr-json-key \
   --docker-server=${REGION}-docker.pkg.dev \
   --docker-username=_json_key \
   --docker-password="$(cat key.json)" \
   --docker-email=user@example.com \
-  -n microblog
+  -n yaonet
 
 # 清理临时密钥文件
 rm key.json
 
 # 验证 Secret 创建
-kubectl get secret -n microblog gcr-json-key
+kubectl get secret -n yaonet gcr-json-key
 ```
 
 ### （推荐）使用 Workload Identity（更安全）
@@ -195,19 +195,19 @@ gcloud container clusters update $CLUSTER_NAME \
   --zone=$ZONE
 
 # 创建 Kubernetes Service Account
-kubectl create serviceaccount microblog-ksa -n microblog
+kubectl create serviceaccount yaonet-ksa -n yaonet
 
 # 为 KSA 绑定 GSA（Google Service Account）
 gcloud iam service-accounts add-iam-policy-binding \
-  gke-microblog-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+  gke-yaonet-sa@${PROJECT_ID}.iam.gserviceaccount.com \
   --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:${PROJECT_ID}.svc.id.goog[microblog/microblog-ksa]"
+  --member "serviceAccount:${PROJECT_ID}.svc.id.goog[yaonet/yaonet-ksa]"
 
 # 在 Pod 中配置 Workload Identity
 # 在 Kubernetes manifests 中添加：
-# serviceAccountName: microblog-ksa
+# serviceAccountName: yaonet-ksa
 # 和 Pod annotation:
-# iam.gke.io/gcp-service-account: gke-microblog-sa@${PROJECT_ID}.iam.gserviceaccount.com
+# iam.gke.io/gcp-service-account: gke-yaonet-sa@${PROJECT_ID}.iam.gserviceaccount.com
 ```
 
 ## 第 5 步：配置持久化存储
@@ -243,16 +243,16 @@ kubectl apply -f k8s/9-ingress-gke.yaml
 
 ```bash
 # 实时监看 Pod 创建
-kubectl get pods -n microblog -w
+kubectl get pods -n yaonet -w
 
 # 等待所有 Pod 就绪
-kubectl wait --for=condition=ready pod -l app=postgres -n microblog --timeout=120s
-kubectl wait --for=condition=ready pod -l app=redis -n microblog --timeout=120s
-kubectl wait --for=condition=ready pod -l app=web -n microblog --timeout=120s
+kubectl wait --for=condition=ready pod -l app=postgres -n yaonet --timeout=120s
+kubectl wait --for=condition=ready pod -l app=redis -n yaonet --timeout=120s
+kubectl wait --for=condition=ready pod -l app=web -n yaonet --timeout=120s
 
 # 检查服务和 Ingress
-kubectl get svc -n microblog
-kubectl get ingress -n microblog
+kubectl get svc -n yaonet
+kubectl get ingress -n yaonet
 ```
 
 ## 第 6 步：访问应用
@@ -261,36 +261,36 @@ kubectl get ingress -n microblog
 
 ```bash
 # 获取 Web 服务的外部 IP（LoadBalancer）
-kubectl get svc -n microblog web
+kubectl get svc -n yaonet web
 
 # 在 EXTERNAL-IP 列找到公网 IP，访问：
 # http://<EXTERNAL-IP>:8000
 
 # 获取 IP 的懒办法
-kubectl get svc -n microblog web -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+kubectl get svc -n yaonet web -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
 ### 通过 Ingress 使用自定义域名（推荐）
 
 ```bash
 # 获取 Ingress 的外部 IP
-kubectl get ingress -n microblog
+kubectl get ingress -n yaonet
 
 # 配置你的 DNS 指向这个 IP
 # 例如在 GCP Cloud DNS 或你的域名提供商中添加：
-# A 記錄: microblog.example.com -> <INGRESS-IP>
+# A 記錄: yaonet.example.com -> <INGRESS-IP>
 
 # 然后访问：
-# https://microblog.example.com
+# https://yaonet.example.com
 ```
 
 ## 第 7 步：创建初始用户（可选）
 
 ```bash
 # 进入 Web Pod 的 Flask shell
-kubectl exec -it -n microblog deployment/web -- flask shell
+kubectl exec -it -n yaonet deployment/web -- flask shell
 
-# 在 Python REPL 中执行（参考本项目的 microblog.py）
+# 在 Python REPL 中执行（参考本项目的 yaonet.py）
 >>> from app import db
 >>> from app.models import User
 >>> u = User(username='admin', email='admin@example.com')
@@ -316,13 +316,13 @@ gcloud container clusters describe $CLUSTER_NAME --zone=$ZONE
 
 ```bash
 # 实时日志（Web）
-kubectl logs -f -n microblog -l app=web
+kubectl logs -f -n yaonet -l app=web
 
 # 查看特定 Pod 日志
-kubectl logs -f -n microblog pod/web-xxxxx
+kubectl logs -f -n yaonet pod/web-xxxxx
 
 # 使用 gcloud 查看集群级别的日志
-gcloud logging read "resource.type=k8s_container AND resource.labels.namespace_name=microblog" \
+gcloud logging read "resource.type=k8s_container AND resource.labels.namespace_name=yaonet" \
   --order=DESC \
   --limit=50
 ```
@@ -331,7 +331,7 @@ gcloud logging read "resource.type=k8s_container AND resource.labels.namespace_n
 
 ```bash
 # 查看 Pod 资源使用
-kubectl top pods -n microblog
+kubectl top pods -n yaonet
 
 # 查看节点资源使用
 kubectl top nodes
@@ -342,10 +342,10 @@ kubectl top nodes
 已在 `k8s/8-hpa.yaml` 中配置。检查状态：
 
 ```bash
-kubectl get hpa -n microblog
+kubectl get hpa -n yaonet
 
 # 查看自动缩放历史
-kubectl describe hpa web -n microblog
+kubectl describe hpa web -n yaonet
 ```
 
 ## 常用 GKE 命令
@@ -412,30 +412,30 @@ gcloud container clusters describe $CLUSTER_NAME --zone=$ZONE --format='value(se
 
 ```bash
 # 检查 imagePullSecrets
-kubectl describe pod <pod-name> -n microblog
+kubectl describe pod <pod-name> -n yaonet
 
 # 验证 secret 存在
-kubectl get secret -n microblog
+kubectl get secret -n yaonet
 
 # 手动测试镜像拉取
 kubectl run -it --image=${IMAGE} --restart=Never test-pull \
-  --overrides='{"spec":{"serviceAccountName":"microblog-ksa"}}' \
-  -n microblog -- bash
+  --overrides='{"spec":{"serviceAccountName":"yaonet-ksa"}}' \
+  -n yaonet -- bash
 ```
 
 ### 无法连接到数据库
 
 ```bash
 # 检查 PostgreSQL Pod 状态
-kubectl get pods -n microblog -l app=postgres
+kubectl get pods -n yaonet -l app=postgres
 
 # 进入 Web Pod 测试连接
-kubectl exec -it -n microblog deployment/web -- \
-  psql -h postgres -U postgres -d microblog -c "SELECT 1"
+kubectl exec -it -n yaonet deployment/web -- \
+  psql -h postgres -U postgres -d yaonet -c "SELECT 1"
 
 # 检查 PersistentVolume
-kubectl get pvc -n microblog
-kubectl describe pvc postgres-storage-postgres-0 -n microblog
+kubectl get pvc -n yaonet
+kubectl describe pvc postgres-storage-postgres-0 -n yaonet
 ```
 
 ### 成本过高
@@ -443,7 +443,7 @@ kubectl describe pvc postgres-storage-postgres-0 -n microblog
 ```bash
 # 检查资源使用
 kubectl top nodes
-kubectl top pods -n microblog --all-namespaces
+kubectl top pods -n yaonet --all-namespaces
 
 # 调整 Pod 资源请求/限制
 # 编辑 manifests 中的 resources.requests/limits
@@ -456,7 +456,7 @@ kubectl top pods -n microblog --all-namespaces
 
 ```bash
 # 删除应用（保留集群）
-kubectl delete namespace microblog
+kubectl delete namespace yaonet
 
 # 删除整个集群（谨慎：会删除所有数据）
 gcloud container clusters delete $CLUSTER_NAME --zone=$ZONE

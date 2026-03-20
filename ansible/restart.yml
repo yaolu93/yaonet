@@ -3,12 +3,12 @@
 # 用途：快速重启所有服务（不重新部署代码）
 # 使用方式：ansible-playbook restart.yml -i inventory
 
-- name: Restart Microblog application
+- name: Restart Yaonet application
   hosts: localhost
   become: yes
   vars:
-    app_user: microblog
-    app_home: /home/microblog
+    app_user: yaonet
+    app_home: /home/yaonet
 
   tasks:
     - name: "Phase 1: Perform health checks"
@@ -25,7 +25,7 @@
 
         - name: Check if nginx is installed
           stat:
-            path: /etc/nginx/sites-available/microblog
+            path: /etc/nginx/sites-available/yaonet
           register: nginx_config
 
         - name: Warn if services not found
@@ -112,7 +112,7 @@
       block:
         - name: Test PostgreSQL connection
           shell: |
-            sudo -u postgres psql -d microblog_db -c "SELECT 1;" 2>&1
+            sudo -u postgres psql -d yaonet_db -c "SELECT 1;" 2>&1
           register: pg_test
           changed_when: false
 

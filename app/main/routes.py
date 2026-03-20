@@ -1,7 +1,7 @@
 """Main application routes: home, user profiles, messages, and search.
 
 Registered on the `main` blueprint; these routes implement the primary
-user-facing functionality of the microblog application.
+user-facing functionality of the yaonet application.
 """
 
 from datetime import datetime, timezone

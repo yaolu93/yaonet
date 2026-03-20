@@ -1,5 +1,5 @@
 [Unit]
-Description=Gunicorn instance to serve Microblog application
+Description=Gunicorn instance to serve Yaonet application
 After=network.target
 
 [Service]
@@ -16,7 +16,7 @@ ExecStart={{ venv_path }}/bin/gunicorn \
     --access-logfile {{ log_dir }}/access.log \
     --error-logfile {{ log_dir }}/error.log \
     --log-level info \
-    microblog:app
+    yaonet:app
 
 Restart=always
 RestartSec=10

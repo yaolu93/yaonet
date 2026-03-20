@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Quick dev shutdown script for this Microblog project
+# Quick dev shutdown script for this Yaonet project
 # Stops Flask server, RQ worker, and Redis server
 # Usage: ./scripts/stop_dev.sh
 
 BASEDIR="$(cd "$(dirname "$0")/.." && pwd)"
 VENV_DIR="$BASEDIR/.venv"
 
-echo "Stopping Microblog development environment..."
+echo "Stopping Yaonet development environment..."
 echo ""
 
 # Colors for output

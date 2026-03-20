@@ -116,7 +116,7 @@ ping 192.168.1.13  # Search
 
 # 测试 PostgreSQL (装完 Ansible 之前需要先装 postgresql-client)
 sudo apt-get install postgresql-client -y
-psql -h 192.168.1.11 -U microblog_user -d microblog_db -c "SELECT NOW();"
+psql -h 192.168.1.11 -U yaonet_user -d yaonet_db -c "SELECT NOW();"
 
 # 测试 Redis
 redis-cli -h 192.168.1.12 -p 6379 -a changeme123 ping
@@ -269,7 +269,7 @@ sudo ss -tlnp | grep 9200   # Elasticsearch
 ```bash
 # 在 Web 服务器上检查连接
 # 检查数据库
-psql -h 192.168.1.11 -U microblog_user -d microblog_db -c "SELECT 1"
+psql -h 192.168.1.11 -U yaonet_user -d yaonet_db -c "SELECT 1"
 
 # 检查 Redis
 redis-cli -h 192.168.1.12 ping

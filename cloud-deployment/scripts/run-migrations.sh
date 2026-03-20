@@ -4,7 +4,7 @@
 
 set -e
 
-PROJECTDIR="/home/yao/fromGithub/microblog"
+PROJECTDIR="/home/yao/fromGithub/yaonet"
 cd "$PROJECTDIR"
 
 echo "════════════════════════════════════════════════════════════════"
@@ -48,9 +48,9 @@ case $choice in
         
         echo ""
         echo "⏳ 部署新版本（启用迁移）..."
-        gcloud run deploy microblog \
+        gcloud run deploy yaonet \
           --project=$GCP_PROJECT_ID \
-          --image=$DOCKER_USERNAME/microblog:latest \
+          --image=$DOCKER_USERNAME/yaonet:latest \
           --region=us-central1 \
           --set-env-vars="\
 DATABASE_URL=$DATABASE_URL,\
@@ -65,9 +65,9 @@ RUN_MIGRATIONS=true"
         
         echo ""
         echo "⏳ 部署新版本（禁用迁移）..."
-        gcloud run deploy microblog \
+        gcloud run deploy yaonet \
           --project=$GCP_PROJECT_ID \
-          --image=$DOCKER_USERNAME/microblog:latest \
+          --image=$DOCKER_USERNAME/yaonet:latest \
           --region=us-central1 \
           --set-env-vars="\
 DATABASE_URL=$DATABASE_URL,\
@@ -90,9 +90,9 @@ RUN_MIGRATIONS=false"
         echo ""
         
         # 创建 Cloud Run Job
-        gcloud run jobs create microblog-db-migrate-$(date +%s) \
+        gcloud run jobs create yaonet-db-migrate-$(date +%s) \
           --project=$GCP_PROJECT_ID \
-          --image=$DOCKER_USERNAME/microblog:latest \
+          --image=$DOCKER_USERNAME/yaonet:latest \
           --region=us-central1 \
           --set-env-vars="\
 DATABASE_URL=$DATABASE_URL,\
@@ -147,11 +147,11 @@ echo "📋 迁移完成后的后续步骤:"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 echo "1️⃣ 查看应用日志："
-echo "   gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=microblog' \\"
+echo "   gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=yaonet' \\"
 echo "     --project=$GCP_PROJECT_ID --limit=20"
 echo ""
 echo "2️⃣ 访问应用："
-echo "   https://microblog-613015340025.us-central1.run.app"
+echo "   https://yaonet-613015340025.us-central1.run.app"
 echo ""
 echo "3️⃣ 可选：创建初始用户"
 echo "   bash cloud-deployment/scripts/create-user.sh"

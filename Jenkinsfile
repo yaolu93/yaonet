@@ -12,21 +12,21 @@ pipeline {
         stage('Build Image') {
             steps {
                 // 构建 Docker 镜像，使用构建号作为标签
-                sh "docker build -t microblog:${env.BUILD_NUMBER} ."
+                sh "docker build -t yaonet:${env.BUILD_NUMBER} ."
             }
         }
 
         stage('Clean Old Container') {
             steps {
                 // 停止并删除旧容器（如果存在），忽略报错
-                sh "docker stop microblog || true && docker rm microblog || true"
+                sh "docker stop yaonet || true && docker rm yaonet || true"
             }
         }
 
         stage('Deploy') {
             steps {
                 // 启动新容器
-                sh "docker run -d --name microblog -p 8000:5000 microblog:${env.BUILD_NUMBER}"
+                sh "docker run -d --name yaonet -p 8000:5000 yaonet:${env.BUILD_NUMBER}"
             }
         }
     }

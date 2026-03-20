@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Quick dev startup script for this Microblog project
+# Quick dev startup script for this Yaonet project
 # Usage: ./scripts/run_dev.sh [--no-worker]
 
 BASEDIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -79,7 +79,7 @@ else
   echo "Requirements unchanged; skipping pip install"
 fi
 
-export FLASK_APP=microblog.py
+export FLASK_APP=yaonet.py
 export FLASK_ENV=development
 export FLASK_DEBUG=1
 
@@ -124,7 +124,7 @@ done
 
 if [ "$START_WORKER" = true ]; then
   echo "Starting RQ worker in background (logs/rq_worker.log)..."
-  nohup rq worker microblog-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
+  nohup rq worker yaonet-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
   echo $! > "$BASEDIR/tmp/rq_worker.pid"
 fi
 

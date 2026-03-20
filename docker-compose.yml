@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: example
-      POSTGRES_DB: microblog
+      POSTGRES_DB: yaonet
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -16,7 +16,7 @@ services:
 
   web:
     build: .
-    command: gunicorn microblog:app -b 0.0.0.0:8000 -w 4 --log-level debug --access-logfile - --error-logfile -
+    command: gunicorn yaonet:app -b 0.0.0.0:8000 -w 4 --log-level debug --access-logfile - --error-logfile -
     ports:
       - "8000:8000"
     depends_on:
@@ -24,7 +24,7 @@ services:
       - redis
     environment:
       - FLASK_ENV=production
-      - DATABASE_URL=postgresql://postgres:example@db:5432/microblog
+      - DATABASE_URL=postgresql://postgres:example@db:5432/yaonet
       - REDIS_URL=redis://redis:6379/0
       - ELASTICSEARCH_URL=
       - RUN_MIGRATIONS=true
@@ -32,23 +32,23 @@ services:
       - FLASK_DEBUG=1
       - PYTHONUNBUFFERED=1
     volumes:
-      - .:/home/microblog
+      - .:/home/yaonet
     restart: always
 
   worker:
     build: .
-    command: rq worker microblog-tasks
+    command: rq worker yaonet-tasks
     depends_on:
       - redis
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:example@db:5432/microblog
+      - DATABASE_URL=postgresql://postgres:example@db:5432/yaonet
       - REDIS_URL=redis://redis:6379/0
       - RUN_MIGRATIONS=false
       - LOG_TO_STDOUT=true
       - PYTHONUNBUFFERED=1
     volumes:
-      - .:/home/microblog
+      - .:/home/yaonet
     restart: always
 
   # prometheus:
@@ -86,7 +86,7 @@ services:
   #   ports:
   #     - "9187:9187"
   #   environment:
-  #     DATA_SOURCE_NAME: "postgresql://postgres:example@db:5432/microblog?sslmode=disable"
+  #     DATA_SOURCE_NAME: "postgresql://postgres:example@db:5432/yaonet?sslmode=disable"
   #   depends_on:
   #     - db
   #   restart: always

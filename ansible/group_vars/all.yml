@@ -2,11 +2,11 @@
 ---
 
 # Application settings
-app_name: microblog
-app_user: microblog
-app_group: microblog
+app_name: yaonet
+app_user: yaonet
+app_group: yaonet
 app_home: /home/{{ app_user }}
-app_path: "{{ app_home }}/microblog"
+app_path: "{{ app_home }}/yaonet"
 app_env: production
 
 # Python environment
@@ -18,7 +18,7 @@ timezone: UTC
 ntp_server: pool.ntp.org
 
 # Logging
-log_dir: /var/log/microblog
+log_dir: /var/log/yaonet
 log_level: INFO
 
 # Security
@@ -40,9 +40,9 @@ elasticsearch_version: 8.11
 # Web 服务器将使用 localhost 连接到本机数据库（同一台服务器）
 postgres_host: localhost              # 本机 PostgreSQL
 postgres_port: 5432
-postgres_user: microblog_user
-postgres_password: microblog_secure_pwd_2024  # ← 改为你的强密码
-postgres_database: microblog_db
+postgres_user: yaonet_user
+postgres_password: yaonet_secure_pwd_2024  # ← 改为你的强密码
+postgres_database: yaonet_db
 postgres_listen_address: "127.0.0.1"  # 本机连接即可
 
 # Redis 缓存连接配置
@@ -64,7 +64,7 @@ web_server_ip: 192.168.118.132        # 服务器的 IP
 # ============================================
 
 # Repository settings
-git_repo: https://github.com/yaolu93/microblog.git
+git_repo: https://github.com/yaolu93/yaonet.git
 git_branch: main
 git_key: "{{ app_home }}/.ssh/id_rsa"
 

@@ -1,5 +1,5 @@
 # Minikube-specific values override
-# Usage: helm install microblog ./helm/microblog -f helm/microblog/values-minikube.yaml
+# Usage: helm install yaonet ./helm/yaonet -f helm/yaonet/values-minikube.yaml
 
 global:
   environment: development

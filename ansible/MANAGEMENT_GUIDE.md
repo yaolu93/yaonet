@@ -16,7 +16,7 @@
 
 ### 检查 Inventory
 ```bash
-cd /home/yao/fromGithub/microblog/ansible
+cd /home/yao/fromGithub/yaonet/ansible
 cat inventory
 ```
 
@@ -223,7 +223,7 @@ ansible-playbook health-check.yml -i inventory
 | 服务 | 地址 | 认证 |
 |------|------|------|
 | Web 应用 | https://192.168.118.132/ | 用户登录 |
-| PostgreSQL | localhost:5432 | 密码: microblog_secure_pwd_2024 |
+| PostgreSQL | localhost:5432 | 密码: yaonet_secure_pwd_2024 |
 | Redis | localhost:6379 | 密码: redis_secure_pwd_2024 |
 | Nginx | port 80/443 | HTTPS 强制重定向 |
 
@@ -248,7 +248,7 @@ tail -f /var/log/nginx/error.log
 
 ### 查看应用日志
 ```bash
-tail -f /var/log/microblog/microblog.log
+tail -f /var/log/yaonet/yaonet.log
 ```
 
 ---
@@ -261,7 +261,7 @@ tail -f /var/log/microblog/microblog.log
 journalctl -u gunicorn -n 50
 
 # 检查虚拟环境
-ls -la /home/microblog/venv
+ls -la /home/yaonet/venv
 
 # 重新部署
 ansible-playbook site.yml -i inventory
@@ -273,7 +273,7 @@ ansible-playbook site.yml -i inventory
 systemctl status postgresql
 
 # 测试连接
-sudo -u postgres psql -d microblog_db -c "SELECT 1;"
+sudo -u postgres psql -d yaonet_db -c "SELECT 1;"
 
 # 查看 PostgreSQL 日志
 journalctl -u postgresql -n 50
@@ -336,7 +336,7 @@ ps aux | grep gunicorn | grep -v grep
 
 ### 查看应用配置
 ```bash
-cat /home/microblog/microblog/config.py
+cat /home/yaonet/yaonet/config.py
 ```
 
 ---
@@ -344,7 +344,7 @@ cat /home/microblog/microblog/config.py
 ## 📝 Playbook 文件位置
 
 ```
-/home/yao/fromGithub/microblog/ansible/
+/home/yao/fromGithub/yaonet/ansible/
 ├── site.yml              # 完整部署
 ├── deploy.yml            # 应用更新
 ├── restart.yml           # 服务重启 ⭐ NEW
@@ -389,7 +389,7 @@ cat /home/microblog/microblog/config.py
 
 3. 定期备份数据库：
    ```bash
-   sudo pg_dump -U microblog microblog_db > backup.sql
+   sudo pg_dump -U yaonet yaonet_db > backup.sql
    ```
 
 ---

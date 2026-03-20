@@ -23,8 +23,8 @@
 
 - name: Create Nginx site configuration
   template:
-    src: microblog.conf.j2
-    dest: /etc/nginx/sites-available/microblog
+    src: yaonet.conf.j2
+    dest: /etc/nginx/sites-available/yaonet
     owner: root
     group: root
     mode: "0644"
@@ -32,8 +32,8 @@
 
 - name: Enable Nginx site
   file:
-    src: /etc/nginx/sites-available/microblog
-    dest: /etc/nginx/sites-enabled/microblog
+    src: /etc/nginx/sites-available/yaonet
+    dest: /etc/nginx/sites-enabled/yaonet
     state: link
   notify: test and reload nginx
 

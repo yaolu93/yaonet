@@ -1,11 +1,11 @@
 # GKE production values override
-# Usage: helm install microblog ./helm/microblog -f helm/microblog/values-gke.yaml
+# Usage: helm install yaonet ./helm/yaonet -f helm/yaonet/values-gke.yaml
 
 global:
   environment: production
 
 image:
-  repository: asia-east1-docker.pkg.dev/microblog-487821/microblog/microblog
+  repository: asia-east1-docker.pkg.dev/yaonet-487821/yaonet/yaonet
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -79,19 +79,19 @@ ingress:
   enabled: true
   className: gce
   hosts:
-    - host: microblog.example.com
+    - host: yaonet.example.com
       paths:
         - path: /
           pathType: Prefix
   managedCertificate:
     enabled: true
     domains:
-      - microblog.example.com
+      - yaonet.example.com
 
 workloadIdentity:
   enabled: true
-  googleServiceAccount: gke-microblog-sa@microblog-487821.iam.gserviceaccount.com
-  kubernetesServiceAccount: microblog-ksa
+  googleServiceAccount: gke-yaonet-sa@yaonet-487821.iam.gserviceaccount.com
+  kubernetesServiceAccount: yaonet-ksa
 
 podAntiAffinity:
   enabled: true  # Spread across nodes for better availability

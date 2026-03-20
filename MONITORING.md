@@ -70,7 +70,7 @@ docker-compose up -d
   - 類型：測量器
 
 #### 3. 應用程序信息
-- **`microblog_app_info`**：應用程序版本和狀態
+- **`yaonet_app_info`**：應用程序版本和狀態
   - 標籤：版本
 
 ## 預配置儀表板
@@ -132,7 +132,7 @@ alerting:
 
 ```yaml
 groups:
-- name: microblog
+- name: yaonet
   rules:
   - alert: HighErrorRate
     expr: rate(http_requests_total{status=~"5.."}[1m]) > 0.05

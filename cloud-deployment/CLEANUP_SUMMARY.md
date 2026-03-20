@@ -103,12 +103,12 @@ source cloud-deployment/.env.cloud
 source .venv/bin/activate
 
 # 2. 构建和推送
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest .
-docker push $DOCKER_USERNAME/microblog:latest
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest .
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 3. 部署
-gcloud run deploy microblog \
-  --image=$DOCKER_USERNAME/microblog:latest \
+gcloud run deploy yaonet \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --region=us-central1 \
   --project=$GCP_PROJECT_ID
 ```

@@ -2,15 +2,15 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: microblog-ingress
+  name: yaonet-ingress
   namespace: {{ .Values.namespace.name }}
   labels:
     app: {{ .Values.app.name }}
   {{- if .Values.ingress.managedCertificate.enabled }}
   annotations:
     kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.global-static-ip-name: "microblog-ip"
-    networking.gke.io/managed-certificates: "microblog-managed-cert"
+    kubernetes.io/ingress.global-static-ip-name: "yaonet-ip"
+    networking.gke.io/managed-certificates: "yaonet-managed-cert"
   {{- end }}
 spec:
   {{- if .Values.ingress.className }}
@@ -48,7 +48,7 @@ spec:
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
-  name: microblog-managed-cert
+  name: yaonet-managed-cert
   namespace: {{ .Values.namespace.name }}
 spec:
   domains:

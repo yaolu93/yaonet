@@ -16,7 +16,7 @@ ansible --version
 ## Directory Setup
 
 ```bash
-cd /home/yao/fromGithub/microblog/ansible
+cd /home/yao/fromGithub/yaonet/ansible
 ```
 
 ## Initial Configuration

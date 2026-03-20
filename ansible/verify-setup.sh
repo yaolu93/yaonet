@@ -11,7 +11,7 @@ if [ ! -f "$INVENTORY_FILE" ]; then
 fi
 
 echo "=========================================="
-echo "Microblog Ansible Deployment Verification"
+echo "Yaonet Ansible Deployment Verification"
 echo "=========================================="
 echo ""
 

@@ -16,7 +16,7 @@
 ## 🚀 应用地址
 
 ```
-https://microblog-613015340025.us-central1.run.app
+https://yaonet-613015340025.us-central1.run.app
 ```
 
 **立即访问应用！** 👆
@@ -55,7 +55,7 @@ https://microblog-613015340025.us-central1.run.app
 ### 1️⃣ 创建初始用户
 
 ```bash
-cd /home/yao/fromGithub/microblog
+cd /home/yao/fromGithub/yaonet
 source cloud-deployment/.env.cloud
 source .venv/bin/activate
 
@@ -79,7 +79,7 @@ EOF
 ### 2️⃣ 配置自定义域名
 
 在 Cloud Run 控制台：
-1. 选择 `microblog` 服务
+1. 选择 `yaonet` 服务
 2. 点击 "管理自定义域"
 3. 绑定你的域名
 
@@ -95,7 +95,7 @@ EOF
 
 ```bash
 source cloud-deployment/.env.cloud
-gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=microblog" \
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=yaonet" \
   --project=$GCP_PROJECT_ID \
   --limit=50 \
   --format='table(severity, textPayload)'
@@ -105,7 +105,7 @@ gcloud logging read "resource.type=cloud_run_revision AND resource.labels.servic
 
 ```bash
 source cloud-deployment/.env.cloud
-gcloud run services describe microblog \
+gcloud run services describe yaonet \
   --project=$GCP_PROJECT_ID \
   --region=us-central1
 ```
@@ -114,9 +114,9 @@ gcloud run services describe microblog \
 
 ```bash
 source cloud-deployment/.env.cloud
-gcloud run deploy microblog \
+gcloud run deploy yaonet \
   --project=$GCP_PROJECT_ID \
-  --image=$DOCKER_USERNAME/microblog:latest \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --region=us-central1 \
   --allow-unauthenticated
 ```
@@ -188,16 +188,16 @@ gcloud run deploy microblog \
 
 ```bash
 # 查看应用 URL
-gcloud run services describe microblog --format='value(status.url)'
+gcloud run services describe yaonet --format='value(status.url)'
 
 # 查看日志
-gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=microblog' --limit=50
+gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=yaonet' --limit=50
 
 # 更新环境变量
-gcloud run services update microblog --update-env-vars=KEY=VALUE
+gcloud run services update yaonet --update-env-vars=KEY=VALUE
 
 # 删除应用
-gcloud run services delete microblog --region=us-central1
+gcloud run services delete yaonet --region=us-central1
 
 # 本地运行迁移
 flask db upgrade
@@ -232,6 +232,6 @@ python -c "from app import app, db; from app.models import User; ..."
 
 **你的 Flask 微博应用已成功部署到 Google Cloud Run！**
 
-应用地址：https://microblog-613015340025.us-central1.run.app
+应用地址：https://yaonet-613015340025.us-central1.run.app
 
 现在可以开始使用了！🚀

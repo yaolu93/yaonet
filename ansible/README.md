@@ -104,13 +104,13 @@ search01.example.com ansible_host=192.168.1.13
 Edit `group_vars/all.yml` with your deployment settings:
 
 ```yaml
-git_repo: https://github.com/yourusername/microblog.git
+git_repo: https://github.com/yourusername/yaonet.git
 git_branch: main
 app_env: production
 postgres_password: changeme123  # Use strong password!
 redis_password: changeme123
 secret_key: your-flask-secret-key
-server_name: microblog.example.com
+server_name: yaonet.example.com
 ```
 
 ### 3. Run Full Deployment
@@ -196,11 +196,11 @@ localhost ansible_connection=local
 
 **关键变量：**
 ```yaml
-app_user: microblog                           # 应用运行用户
-app_path: /home/microblog/microblog           # 应用代码路径
+app_user: yaonet                           # 应用运行用户
+app_path: /home/yaonet/yaonet           # 应用代码路径
 python_version: "3.11"                        # Python 版本
-venv_path: /home/microblog/venv               # 虚拟环境路径
-postgres_password: microblog_secure_pwd_2024  # 数据库密码
+venv_path: /home/yaonet/venv               # 虚拟环境路径
+postgres_password: yaonet_secure_pwd_2024  # 数据库密码
 redis_password: redis_secure_pwd_2024         # Redis 密码
 gunicorn_workers: 4                           # Gunicorn 工作进程数
 ```
@@ -227,8 +227,8 @@ gunicorn_workers: 4                           # Gunicorn 工作进程数
 ✓ 更新系统软件包
 ✓ 安装基础工具 (curl, wget, vim, git)
 ✓ 设置时区 (UTC)
-✓ 创建应用用户 (microblog)
-✓ 创建应用目录 (/home/microblog/*)
+✓ 创建应用用户 (yaonet)
+✓ 创建应用目录 (/home/yaonet/*)
 ✓ 配置 SSH 密钥访问
 ✓ 启用防火墙（UFW）和配置规则
 ✓ 启用安全服务 (fail2ban)
@@ -240,8 +240,8 @@ gunicorn_workers: 4                           # Gunicorn 工作进程数
 ✓ 添加 PostgreSQL 官方仓库
 ✓ 安装 PostgreSQL 15
 ✓ 启动 PostgreSQL 服务
-✓ 创建应用数据库 (microblog_db)
-✓ 创建应用用户 (microblog_user)
+✓ 创建应用数据库 (yaonet_db)
+✓ 创建应用用户 (yaonet_user)
 ✓ 设置用户访问权限
 ✓ 优化配置参数 (max_connections, shared_buffers)
 ✓ 配置连接认证 (pg_hba.conf)
@@ -294,7 +294,7 @@ gunicorn_workers: 4                           # Gunicorn 工作进程数
 ✓ 安装 Nginx
 ✓ 创建 Nginx 日志目录（在配置测试前，修复过）
 ✓ 创建主配置文件 (nginx.conf)
-✓ 创建应用配置 (microblog.conf)
+✓ 创建应用配置 (yaonet.conf)
   ├─ 反向代理到 Gunicorn (127.0.0.1:8000)
   ├─ HTTPS 强制重定向
   └─ 安全头、性能优化
@@ -382,7 +382,7 @@ roles/ROLE_NAME/
 **主要功能：** 基础系统配置
 
 **输出：**
-- 系统用户创建 (microblog 用户)
+- 系统用户创建 (yaonet 用户)
 - 应用目录创建
 - SSH 密钥配置
 - 防火墙规则 (UFW)
@@ -399,8 +399,8 @@ roles/ROLE_NAME/
 
 **输出：**
 - PostgreSQL 15 安装
-- 数据库创建 (microblog_db)
-- 用户创建和权限设置 (microblog_user)
+- 数据库创建 (yaonet_db)
+- 用户创建和权限设置 (yaonet_user)
 - 性能参数优化
 - 自动备份脚本
 - 连接认证配置
@@ -412,8 +412,8 @@ roles/ROLE_NAME/
 - `handlers/main.yml` - PostgreSQL 重启
 
 **默认凭证：**
-- User: `microblog_user`
-- Password: `microblog_secure_pwd_2024` (改为强密码)
+- User: `yaonet_user`
+- Password: `yaonet_secure_pwd_2024` (改为强密码)
 
 ### 🔴 Redis Role
 **主要功能：** 缓存服务配置
@@ -499,7 +499,7 @@ roles/ROLE_NAME/
   - SSL 证书生成
   - nginx -t 测试
 - `templates/nginx.conf.j2` - Nginx 主配置
-- `templates/microblog.conf.j2` - 应用特定配置
+- `templates/yaonet.conf.j2` - 应用特定配置
 - `templates/gzip.conf.j2` - 压缩配置
 - `templates/security-headers.conf.j2` - 安全头
 - `templates/proxy-params.conf.j2` - 代理参数
@@ -569,7 +569,7 @@ Ansible 部署过程中已应用以下关键修复，确保部署顺利进行：
 - name: Copy application code (fallback)
   shell: |
     mkdir -p "{{ app_path }}"
-    cp -rf /home/yao/fromGithub/microblog/* "{{ app_path }}/"
+    cp -rf /home/yao/fromGithub/yaonet/* "{{ app_path }}/"
   when: rsync_result.failed | default(false)
 ```
 
@@ -581,7 +581,7 @@ Ansible 部署过程中已应用以下关键修复，确保部署顺利进行：
 **位置：** [roles/nginx/tasks/main.yml](roles/nginx/tasks/main.yml)
 
 **问题：**
-- 日志目录（`/var/log/microblog/nginx`）的创建任务在 Nginx 配置测试之后
+- 日志目录（`/var/log/yaonet/nginx`）的创建任务在 Nginx 配置测试之后
 - 导致 `nginx -t` 测试失败（日志目录不存在）
 - 阻止 Nginx 服务启动
 
@@ -590,7 +590,7 @@ Ansible 部署过程中已应用以下关键修复，确保部署顺利进行：
 # 将日志目录创建任务移到配置测试之前
 - name: Create Nginx log directory
   file:
-    path: /var/log/microblog/nginx
+    path: /var/log/yaonet/nginx
     state: directory
     owner: www-data
     group: www-data
@@ -628,7 +628,7 @@ Ansible 部署过程中已应用以下关键修复，确保部署顺利进行：
   args:
     executable: /bin/bash  # ← 关键修复
   environment:
-    FLASK_APP: microblog.py
+    FLASK_APP: yaonet.py
 
 - name: Compile translations
   shell: |
@@ -647,7 +647,7 @@ Ansible 部署过程中已应用以下关键修复，确保部署顺利进行：
 ## Security Considerations
 
 1. **Passwords**: Change all default passwords in `group_vars/`
-   - PostgreSQL: `microblog_secure_pwd_2024`
+   - PostgreSQL: `yaonet_secure_pwd_2024`
    - Redis: `redis_secure_pwd_2024`
    
 2. **SSH**: 
@@ -665,7 +665,7 @@ Ansible 部署过程中已应用以下关键修复，确保部署顺利进行：
    - Configure `server_name` in `group_vars/all.yml`
    
 5. **Database**: PostgreSQL requires strong password authentication
-   - User: `microblog_user`
+   - User: `yaonet_user`
    - Configure `pg_hba.conf` for IP-based access control
    
 6. **Redis**: 
@@ -702,7 +702,7 @@ sudo journalctl -u gunicorn -n 50
 
 ```bash
 # Test database connection
-psql -h db01.example.com -U microblog_user -d microblog_db
+psql -h db01.example.com -U yaonet_user -d yaonet_db
 ```
 
 ### Redis Connection Issues
@@ -743,10 +743,10 @@ ssh db01.example.com /usr/local/bin/backup-postgres.sh
 
 ```bash
 # View application logs
-ssh web01.example.com tail -f /var/log/microblog/error.log
+ssh web01.example.com tail -f /var/log/yaonet/error.log
 
 # View Nginx logs
-ssh web01.example.com tail -f /var/log/microblog/nginx/access.log
+ssh web01.example.com tail -f /var/log/yaonet/nginx/access.log
 ```
 
 ## Advanced Configuration

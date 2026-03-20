@@ -1,5 +1,5 @@
 [Unit]
-Description=RQ Worker service for Microblog application
+Description=RQ Worker service for Yaonet application
 After=network.target redis-server.service
 
 [Service]
@@ -8,7 +8,7 @@ Group={{ app_group }}
 WorkingDirectory={{ app_path }}
 Environment="PATH={{ venv_path }}/bin"
 Environment="PYTHONPATH={{ app_path }}"
-ExecStart={{ venv_path }}/bin/rq worker microblog-tasks \
+ExecStart={{ venv_path }}/bin/rq worker yaonet-tasks \
     --url redis://:{{ redis_requirepass }}@{{ groups['cacheservers'][0] }}:6379/0
     
 Restart=always

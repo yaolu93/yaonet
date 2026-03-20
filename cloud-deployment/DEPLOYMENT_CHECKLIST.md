@@ -9,7 +9,7 @@
 ### 本地环境检查
 ```bash
 # 进入项目目录
-cd ~/fromGithub/microblog
+cd ~/fromGithub/yaonet
 
 # 检查Docker是否安装
 docker --version
@@ -40,7 +40,7 @@ gcloud init
 ### 1.1 运行测试脚本
 
 ```bash
-cd ~/fromGithub/microblog
+cd ~/fromGithub/yaonet
 
 # 给脚本执行权限
 chmod +x cloud-deployment/scripts/test-cloud-deployment.sh
@@ -60,7 +60,7 @@ Image size: ~500MB
 ### ❌ 如果测试失败
 ```bash
 # 查看详细错误信息
-docker build -f cloud-deployment/Dockerfile -t microblog-test:latest .
+docker build -f cloud-deployment/Dockerfile -t yaonet-test:latest .
 
 # 常见问题：
 # - 磁盘空间不足：docker system prune
@@ -79,8 +79,8 @@ docker build -f cloud-deployment/Dockerfile -t microblog-test:latest .
 1. 访问 https://hub.docker.com
 2. 使用邮箱注册或GitHub登录
 3. 创建一个新Repository (保持为Public):
-   - Repository名称: `microblog`
-   - Description: `Flask microblog application`
+   - Repository名称: `yaonet`
+   - Description: `Flask yaonet application`
 
 ### 2.2 获取Docker Hub用户名
 
@@ -107,29 +107,29 @@ echo $DOCKER_USERNAME
 
 ```bash
 # 进入项目目录
-cd ~/fromGithub/microblog
+cd ~/fromGithub/yaonet
 
 # 设置变量（替换为你的用户名）
 export DOCKER_USERNAME="your_actual_docker_username"
 
 # 构建镜像
 echo "🔨 Building Docker image..."
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest .
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest .
 
 # 推送到Docker Hub
 echo "⬆️ Pushing to Docker Hub..."
-docker push $DOCKER_USERNAME/microblog:latest
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 验证推送成功
 echo "✅ Verifying push..."
-docker pull $DOCKER_USERNAME/microblog:latest
+docker pull $DOCKER_USERNAME/yaonet:latest
 ```
 
 ### ✅ 预期输出
 ```
 Pushed image successfully
 Latest: 154.8MB compressed
-Successfully pulled $DOCKER_USERNAME/microblog:latest
+Successfully pulled $DOCKER_USERNAME/yaonet:latest
 ```
 
 ### ✅ 检查清单
@@ -249,7 +249,7 @@ cat /tmp/neon_credentials.txt
 1. 访问 https://console.cloud.google.com
 2. 点击左上角 "Select a project"
 3. 点击 "NEW PROJECT"
-4. 项目名称: `microblog-production`
+4. 项目名称: `yaonet-production`
 5. 点击 "CREATE"
 
 ### 5.2 获取项目ID
@@ -259,7 +259,7 @@ cat /tmp/neon_credentials.txt
 # 记下项目ID（与名称可能不同）
 
 # 设置本地变量
-export GCP_PROJECT_ID="microblog-production-ab1234"
+export GCP_PROJECT_ID="yaonet-production-ab1234"
 echo $GCP_PROJECT_ID
 ```
 
@@ -288,14 +288,14 @@ gcloud services enable containerregistry.googleapis.com --project=$GCP_PROJECT_I
 
 ```bash
 # 设置所有变量（替换为你自己的值）
-export GCP_PROJECT_ID="microblog-production-ab1234"
+export GCP_PROJECT_ID="yaonet-production-ab1234"
 export DOCKER_USERNAME="your_actual_docker_username"
 export DB_URL="postgresql://user:password@ep-xxxxx.xx.neon.tech/neondb?sslmode=require"
 export REDIS_URL="redis://:password@hostname:port"
 
 # 验证所有变量
 echo "GCP Project: $GCP_PROJECT_ID"
-echo "Docker Image: $DOCKER_USERNAME/microblog:latest"
+echo "Docker Image: $DOCKER_USERNAME/yaonet:latest"
 echo "DB URL: ${DB_URL:0:50}..."
 echo "Redis URL: ${REDIS_URL:0:50}..."
 ```
@@ -303,9 +303,9 @@ echo "Redis URL: ${REDIS_URL:0:50}..."
 ### 6.2 执行部署
 
 ```bash
-gcloud run deploy microblog \
+gcloud run deploy yaonet \
   --project=$GCP_PROJECT_ID \
-  --image=$DOCKER_USERNAME/microblog:latest \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --platform managed \
   --region us-central1 \
   --memory 512Mi \
@@ -334,19 +334,19 @@ Deploying...
 
 ```bash
 # 从输出中复制Service URL，或运行：
-gcloud run services describe microblog \
+gcloud run services describe yaonet \
   --project=$GCP_PROJECT_ID \
   --region=us-central1 \
   --format='value(status.url)'
 
-# 输出示例: https://microblog-xxxxx.run.app
+# 输出示例: https://yaonet-xxxxx.run.app
 ```
 
 ### ✅ 验证部署成功
 
 ```bash
 # 获取服务URL
-export SERVICE_URL=$(gcloud run services describe microblog \
+export SERVICE_URL=$(gcloud run services describe yaonet \
   --project=$GCP_PROJECT_ID \
   --region=us-central1 \
   --format='value(status.url)')
@@ -377,7 +377,7 @@ curl $SERVICE_URL/health
 # 2. 更新域名的NS记录指向Cloudflare
 # 3. 在Cloudflare DNS中添加CNAME记录：
 #    名称: www (或 @)
-#    内容: microblog-xxxxx.run.app
+#    内容: yaonet-xxxxx.run.app
 #    TTL: Auto
 #    代理状态: 已代理 (或不代理)
 ```
@@ -402,7 +402,7 @@ curl https://yourdomain.com
 
 ```bash
 # 获取Service URL
-export SERVICE_URL=$(gcloud run services describe microblog \
+export SERVICE_URL=$(gcloud run services describe yaonet \
   --project=$GCP_PROJECT_ID \
   --region=us-central1 \
   --format='value(status.url)')
@@ -421,7 +421,7 @@ curl $SERVICE_URL/api/users
 
 # 测试4: 查看日志
 echo "✓ 查看最新日志..."
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 50
 ```
 
 ### ✅ 检查清单
@@ -437,7 +437,7 @@ gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50
 使用提供的部署脚本自动化后续部署：
 
 ```bash
-cd ~/fromGithub/microblog
+cd ~/fromGithub/yaonet
 
 # 查看可用的部署脚本
 ls -la cloud-deployment/scripts/
@@ -457,16 +457,16 @@ bash cloud-deployment/scripts/deploy-to-cloud-run.sh
 
 ```bash
 # 查看最新N条日志
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 100
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 100
 
 # 持续跟踪日志
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --follow
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --follow
 ```
 
 ### 10.2 设置警报
 
 在Google Cloud Console:
-1. 访问 "Cloud Run" → "microblog"
+1. 访问 "Cloud Run" → "yaonet"
 2. 点击 "Metrics"
 3. 监控以下指标：
    - Request count
@@ -485,16 +485,16 @@ gcloud run logs read microblog --project=$GCP_PROJECT_ID --follow
 
 ```bash
 # 查看应用日志
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 50
 
 # 查看应用详情
-gcloud run services describe microblog --project=$GCP_PROJECT_ID
+gcloud run services describe yaonet --project=$GCP_PROJECT_ID
 
 # 查看部署历史
-gcloud run revisions list --filter="SERVICE:microblog" --project=$GCP_PROJECT_ID
+gcloud run revisions list --filter="SERVICE:yaonet" --project=$GCP_PROJECT_ID
 
 # 更新应用
-gcloud run deploy microblog --image $DOCKER_USERNAME/microblog:latest --project=$GCP_PROJECT_ID
+gcloud run deploy yaonet --image $DOCKER_USERNAME/yaonet:latest --project=$GCP_PROJECT_ID
 
 # 查看成本
 # https://console.cloud.google.com/billing
@@ -509,12 +509,12 @@ git add .
 git commit -m "description"
 
 # 3. 构建新镜像并推送
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest .
-docker push $DOCKER_USERNAME/microblog:latest
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest .
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 4. 在Cloud Run中更新镜像
-gcloud run deploy microblog \
-  --image=$DOCKER_USERNAME/microblog:latest \
+gcloud run deploy yaonet \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --project=$GCP_PROJECT_ID
 ```
 
@@ -525,14 +525,14 @@ gcloud run deploy microblog \
 ### Q: 部署过程中出现"镜像拉取失败"
 **A:** 检查Docker镜像是否正确推送到Docker Hub
 ```bash
-docker pull $DOCKER_USERNAME/microblog:latest
+docker pull $DOCKER_USERNAME/yaonet:latest
 ```
 
 ### Q: Health check 失败
 **A:** 检查数据库连接
 ```bash
 # 查看日志了解具体错误
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 20
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 20
 ```
 
 ### Q: "Permission denied" 错误

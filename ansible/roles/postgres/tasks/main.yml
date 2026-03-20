@@ -127,9 +127,9 @@
     content: |
       #!/bin/bash
       BACKUP_DIR="{{ postgres_backup_dir }}"
-      BACKUP_FILE="$BACKUP_DIR/microblog_db_$(date +\%Y\%m\%d_\%H\%M\%S).sql"
+      BACKUP_FILE="$BACKUP_DIR/yaonet_db_$(date +\%Y\%m\%d_\%H\%M\%S).sql"
       
-      pg_dump -U postgres microblog_db > "$BACKUP_FILE"
+      pg_dump -U postgres yaonet_db > "$BACKUP_FILE"
       
       # Keep only last 30 days of backups
       find "$BACKUP_DIR" -name "*.sql" -mtime +{{ postgres_backup_retention_days }} -delete

@@ -1,16 +1,16 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: microblog-ingress
-  namespace: microblog
+  name: yaonet-ingress
+  namespace: yaonet
   annotations:
     kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.global-static-ip-name: "microblog-ip"
-    networking.gke.io/managed-certificates: "microblog-cert"
+    kubernetes.io/ingress.global-static-ip-name: "yaonet-ip"
+    networking.gke.io/managed-certificates: "yaonet-cert"
     kubernetes.io/ingress.allow-http: "true"
 spec:
   rules:
-  - host: "microblog.example.com"
+  - host: "yaonet.example.com"
     http:
       paths:
       - path: /*
@@ -28,17 +28,17 @@ status:
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
-  name: microblog-cert
-  namespace: microblog
+  name: yaonet-cert
+  namespace: yaonet
 spec:
   domains:
-  - microblog.example.com
+  - yaonet.example.com
 ---
 apiVersion: compute.cnpg.io/v1
 kind: BackendConfig
 metadata:
   name: web-backendconfig
-  namespace: microblog
+  namespace: yaonet
 spec:
   sessionAffinity:
     affinityType: "CLIENT_IP"

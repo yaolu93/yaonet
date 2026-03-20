@@ -8,41 +8,41 @@
 
 ```bash
 # 1. 查看预览（不部署）
-helm template microblog ./helm/microblog -f helm/microblog/values-minikube.yaml
+helm template yaonet ./helm/yaonet -f helm/yaonet/values-minikube.yaml
 
 # 2. 安装应用
-helm install microblog ./helm/microblog -f helm/microblog/values-minikube.yaml -n microblog --create-namespace
+helm install yaonet ./helm/yaonet -f helm/yaonet/values-minikube.yaml -n yaonet --create-namespace
 
 # 3. 获取访问 URL
-kubectl get svc -n microblog web
-minikube service web -n microblog
+kubectl get svc -n yaonet web
+minikube service web -n yaonet
 ```
 
 ### GKE（生产环境）
 
 ```bash
 # 1. 更新 secrets（必须！）
-vim helm/microblog/values-gke.yaml
+vim helm/yaonet/values-gke.yaml
 # 修改: secrets.secretKey 和 secrets.postgres.password
 
 # 2. 查看预览
-helm template microblog ./helm/microblog -f helm/microblog/values-gke.yaml
+helm template yaonet ./helm/yaonet -f helm/yaonet/values-gke.yaml
 
 # 3. 安装应用
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  -n yaonet \
   --create-namespace
 
 # 4. 监控部署
-helm status microblog -n microblog
-kubectl get pods -n microblog -w
+helm status yaonet -n yaonet
+kubectl get pods -n yaonet -w
 ```
 
 ## 📁 Chart 文件结构
 
 ```
-helm/microblog/
+helm/yaonet/
 ├── Chart.yaml                  # Chart 元数据
 ├── values.yaml                 # 默认值
 ├── values-minikube.yaml        # Minikube 覆盖值
@@ -66,41 +66,41 @@ helm/microblog/
 
 ```bash
 # 查看 values（当前配置）
-helm get values microblog -n microblog
+helm get values yaonet -n yaonet
 
 # 查看生成的 YAML（不部署）
-helm template microblog ./helm/microblog -f helm/microblog/values-gke.yaml
+helm template yaonet ./helm/yaonet -f helm/yaonet/values-gke.yaml
 
 # 查看部署状态
-helm status microblog -n microblog
+helm status yaonet -n yaonet
 
 # 查看部署历史
-helm history microblog -n microblog
+helm history yaonet -n yaonet
 ```
 
 ### 更新和升级
 
 ```bash
 # 更新已部署的应用（修改 values 后）
-helm upgrade microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  -n microblog
+helm upgrade yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  -n yaonet
 
 # 回滚到前一个版本
-helm rollback microblog -n microblog
+helm rollback yaonet -n yaonet
 
 # 回滚到特定版本
-helm rollback microblog 1 -n microblog  # 版本号从 helm history 获取
+helm rollback yaonet 1 -n yaonet  # 版本号从 helm history 获取
 ```
 
 ### 卸载
 
 ```bash
 # 删除应用（保留 namespace）
-helm uninstall microblog -n microblog
+helm uninstall yaonet -n yaonet
 
 # 删除 namespace（同时删除所有资源）
-kubectl delete namespace microblog
+kubectl delete namespace yaonet
 ```
 
 ## 📊 可配置项
@@ -110,7 +110,7 @@ kubectl delete namespace microblog
 | 字段 | 说明 | 默认值 |
 |------|------|--------|
 | `global.environment` | 环境名称 | development |
-| `image.repository` | 容器镜像仓库 | microblog |
+| `image.repository` | 容器镜像仓库 | yaonet |
 | `image.tag` | 镜像标签 | latest |
 | `secrets.secretKey` | Flask SECRET_KEY | you-will-never-guess |
 | `secrets.postgres.password` | 数据库密码 | example |
@@ -144,7 +144,7 @@ env:
 
 1. **修改 Secret 值**
    ```bash
-   vim helm/microblog/values-gke.yaml
+   vim helm/yaonet/values-gke.yaml
    # 修改以下字段，使用强密码：
    # - secrets.secretKey
    # - secrets.postgres.password
@@ -156,7 +156,7 @@ env:
    kubectl create secret generic app-secret \
      --from-literal=SECRET_KEY="$(openssl rand -base64 32)" \
      --from-literal=POSTGRES_PASSWORD="$(openssl rand -base64 32)" \
-     -n microblog
+     -n yaonet
    ```
 
 3. **启用 Workload Identity**（GKE）
@@ -164,7 +164,7 @@ env:
    # 在 values-gke.yaml 中设置
    workloadIdentity:
      enabled: true
-     googleServiceAccount: gke-microblog-sa@YOUR_PROJECT.iam.gserviceaccount.com
+     googleServiceAccount: gke-yaonet-sa@YOUR_PROJECT.iam.gserviceaccount.com
    ```
 
 4. **使用 TLS/HTTPS**
@@ -211,27 +211,27 @@ webAutoscaling:
 
 ```bash
 # 查看 Pod 日志
-kubectl logs -n microblog deployment/web
+kubectl logs -n yaonet deployment/web
 
 # 查看 Pod 事件
-kubectl describe pod -n microblog <pod-name>
+kubectl describe pod -n yaonet <pod-name>
 
 # 进入 Pod
-kubectl exec -it -n microblog deployment/web -- bash
+kubectl exec -it -n yaonet deployment/web -- bash
 ```
 
 ### 数据库连接错误
 
 ```bash
 # 检查 ConfigMap
-kubectl get configmap -n microblog app-config -o yaml
+kubectl get configmap -n yaonet app-config -o yaml
 
 # 检查 Secret
-kubectl get secret -n microblog app-secret -o yaml
+kubectl get secret -n yaonet app-secret -o yaml
 
 # 测试数据库连接
-kubectl exec -it -n microblog postgres-0 -- \
-  psql -U postgres -d microblog -c "SELECT 1"
+kubectl exec -it -n yaonet postgres-0 -- \
+  psql -U postgres -d yaonet -c "SELECT 1"
 ```
 
 ### 镜像拉取失败
@@ -239,7 +239,7 @@ kubectl exec -it -n microblog postgres-0 -- \
 ```bash
 # 对于 Minikube（本地镜像）
 eval $(minikube docker-env)
-docker build -t microblog:latest .
+docker build -t yaonet:latest .
 
 # 为 GKE 设置镜像仓库
 # 更新 values-gke.yaml 中的 image.repository 为您的 Artifact Registry URL
@@ -249,16 +249,16 @@ docker build -t microblog:latest .
 
 ```bash
 # 查看部署历史和版本
-helm history microblog -n microblog
+helm history yaonet -n yaonet
 
 # 升级到新版本
-helm upgrade microblog ./helm/microblog -f helm/microblog/values-gke.yaml -n microblog
+helm upgrade yaonet ./helm/yaonet -f helm/yaonet/values-gke.yaml -n yaonet
 
 # 如果升级失败，立即回滚
-helm rollback microblog -n microblog
+helm rollback yaonet -n yaonet
 
 # 回滚到特定版本
-helm rollback microblog 2 -n microblog  # 版本2
+helm rollback yaonet 2 -n yaonet  # 版本2
 ```
 
 ## 🌐 Ingress/自定义域名（GKE）
@@ -268,7 +268,7 @@ helm rollback microblog 2 -n microblog  # 版本2
    ingress:
      enabled: true
      hosts:
-       - host: microblog.yourdomain.com
+       - host: yaonet.yourdomain.com
          paths:
            - path: /
              pathType: Prefix
@@ -277,7 +277,7 @@ helm rollback microblog 2 -n microblog  # 版本2
 2. 配置 DNS 指向 Ingress IP
    ```bash
    # 获取 Ingress IP
-   kubectl get ingress -n microblog
+   kubectl get ingress -n yaonet
    # 在 DNS 提供商配置 CNAME 或 A 记录
    ```
 

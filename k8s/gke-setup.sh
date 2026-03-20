@@ -16,9 +16,9 @@ NC='\033[0m' # No Color
 # 配置变量
 PROJECT_ID="${GCP_PROJECT_ID:-}"
 REGION="${GCP_REGION:-asia-east1}"
-CLUSTER_NAME="${CLUSTER_NAME:-microblog-cluster}"
+CLUSTER_NAME="${CLUSTER_NAME:-yaonet-cluster}"
 ZONE="${GCP_ZONE:-asia-east1-a}"
-REPOSITORY="${REPOSITORY:-microblog}"
+REPOSITORY="${REPOSITORY:-yaonet}"
 MACHINE_TYPE="${MACHINE_TYPE:-n1-standard-2}"
 
 # 第 1 步：验证必要工具和凭据
@@ -94,7 +94,7 @@ echo -e "${GREEN}✅ Docker configured${NC}"
 # 第 5 步：构建和推送镜像
 echo -e "\n${YELLOW}【5】Building and pushing Docker image...${NC}"
 
-IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/microblog:latest"
+IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/yaonet:latest"
 echo "Image: $IMAGE"
 
 cd "$(dirname "$0")/.."
@@ -136,8 +136,8 @@ echo -e "${GREEN}✅ Credentials configured${NC}"
 # 第 8 步：创建 Service Account 和 IAM 绑定
 echo -e "\n${YELLOW}【8】Setting up Workload Identity...${NC}"
 
-GSA_NAME="gke-microblog-sa"
-KSA_NAME="microblog-ksa"
+GSA_NAME="gke-yaonet-sa"
+KSA_NAME="yaonet-ksa"
 
 # 创建 Google Service Account
 if gcloud iam service-accounts describe ${GSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com &>/dev/null; then
@@ -162,18 +162,18 @@ echo -e "\n${YELLOW}【9】Creating Kubernetes namespace and service account...$
 
 kubectl apply -f k8s/1-namespace.yaml
 
-kubectl create serviceaccount $KSA_NAME -n microblog --dry-run=client -o yaml | kubectl apply -f -
+kubectl create serviceaccount $KSA_NAME -n yaonet --dry-run=client -o yaml | kubectl apply -f -
 
 # 绑定 GSA 和 KSA
 gcloud iam service-accounts add-iam-policy-binding \
     ${GSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role roles/iam.workloadIdentityUser \
-    --member "serviceAccount:${PROJECT_ID}.svc.id.goog[microblog/${KSA_NAME}]" \
+    --member "serviceAccount:${PROJECT_ID}.svc.id.goog[yaonet/${KSA_NAME}]" \
     --quiet || true
 
 # 添加 KSA annotation
 kubectl annotate serviceaccount $KSA_NAME \
-    -n microblog \
+    -n yaonet \
     iam.gke.io/gcp-service-account=${GSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
     --overwrite 2>/dev/null || true
 
@@ -191,8 +191,8 @@ echo -e "${GREEN}✅ ConfigMap and secrets created${NC}"
 echo -e "\n${YELLOW}【11】Deploying application...${NC}"
 
 # 替换镜像名称在 manifests 中
-sed -i.bak "s|REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/microblog:latest|${IMAGE}|g" k8s/6-web-gke.yaml
-sed -i.bak "s|REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/microblog:latest|${IMAGE}|g" k8s/7-worker-gke.yaml
+sed -i.bak "s|REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/yaonet:latest|${IMAGE}|g" k8s/6-web-gke.yaml
+sed -i.bak "s|REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/yaonet:latest|${IMAGE}|g" k8s/7-worker-gke.yaml
 sed -i.bak "s|PROJECT_ID|${PROJECT_ID}|g" k8s/6-web-gke.yaml
 sed -i.bak "s|PROJECT_ID|${PROJECT_ID}|g" k8s/7-worker-gke.yaml
 
@@ -212,13 +212,13 @@ echo -e "${GREEN}✅ Application deployed${NC}"
 echo -e "\n${YELLOW}【12】Waiting for deployments to be ready (max 5 min)...${NC}"
 
 echo "Waiting for PostgreSQL..."
-kubectl wait --for=condition=ready pod -l app=postgres -n microblog --timeout=300s 2>/dev/null || echo "⚠️  PostgreSQL still initializing..."
+kubectl wait --for=condition=ready pod -l app=postgres -n yaonet --timeout=300s 2>/dev/null || echo "⚠️  PostgreSQL still initializing..."
 
 echo "Waiting for Redis..."
-kubectl wait --for=condition=ready pod -l app=redis -n microblog --timeout=120s 2>/dev/null || true
+kubectl wait --for=condition=ready pod -l app=redis -n yaonet --timeout=120s 2>/dev/null || true
 
 echo "Waiting for Web..."
-kubectl wait --for=condition=ready pod -l app=web -n microblog --timeout=180s 2>/dev/null || echo "⚠️  Web still initializing..."
+kubectl wait --for=condition=ready pod -l app=web -n yaonet --timeout=180s 2>/dev/null || echo "⚠️  Web still initializing..."
 
 echo -e "${GREEN}✅ Deployments ready${NC}"
 
@@ -235,10 +235,10 @@ echo "Next steps:"
 echo ""
 
 # 获取 LoadBalancer IP
-EXTERNAL_IP=$(kubectl get svc -n microblog web -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "pending")
+EXTERNAL_IP=$(kubectl get svc -n yaonet web -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "pending")
 
 echo "1. Check service status:"
-echo "   kubectl get svc -n microblog"
+echo "   kubectl get svc -n yaonet"
 echo ""
 
 if [ "$EXTERNAL_IP" != "pending" ] && [ ! -z "$EXTERNAL_IP" ]; then
@@ -247,16 +247,16 @@ if [ "$EXTERNAL_IP" != "pending" ] && [ ! -z "$EXTERNAL_IP" ]; then
     echo ""
 else
     echo "2. Wait for LoadBalancer to get external IP, then:"
-    echo "   kubectl get svc -n microblog web"
+    echo "   kubectl get svc -n yaonet web"
     echo ""
 fi
 
 echo "3. View logs:"
-echo "   kubectl logs -f -n microblog -l app=web"
+echo "   kubectl logs -f -n yaonet -l app=web"
 echo ""
 
 echo "4. Create initial user:"
-echo "   kubectl exec -it -n microblog deployment/web -- flask shell"
+echo "   kubectl exec -it -n yaonet deployment/web -- flask shell"
 echo ""
 
 echo "5. Access GKE dashboard:"

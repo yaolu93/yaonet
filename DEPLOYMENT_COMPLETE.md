@@ -8,7 +8,7 @@ The Microblog Flask application has been successfully deployed to **192.168.118.
 
 | Service | Status | Port | Notes |
 |---------|--------|------|-------|
-| **PostgreSQL 15** | ✅ Running | 5432 | Database server with microblog_db created |
+| **PostgreSQL 15** | ✅ Running | 5432 | Database server with yaonet_db created |
 | **Redis 7** | ✅ Running | 6379 | Cache server with persistence enabled |
 | **Elasticsearch 8.11**  | ⚠️ Unable to start | 9200 | Installation issues on this system (optional) |
 | **Flask/Gunicorn** | ✅ Running | UNIX socket | 4 worker processes started |
@@ -24,14 +24,14 @@ The Microblog Flask application has been successfully deployed to **192.168.118.
 - Python Version: 3.11
 
 **Application:**
-- Location: `/home/microblog/microblog`
-- Virtual Environment: `/home/microblog/venv`
-- User: `microblog`
+- Location: `/home/yaonet/yaonet`
+- Virtual Environment: `/home/yaonet/venv`
+- User: `yaonet`
 - Port: Behind Nginx (HTTP 80 → HTTPS 443)
 
 **Ansible Infrastructure:**
-- Playbook: `/home/yao/fromGithub/microblog/ansible/site.yml`
-- Inventory: `/home/yao/fromGithub/microblog/ansible/inventory`
+- Playbook: `/home/yao/fromGithub/yaonet/ansible/site.yml`
+- Inventory: `/home/yao/fromGithub/yaonet/ansible/inventory`
 - Configuration: localhost with `ansible_connection=local`
 
 ### 🔗 Accessing the Application
@@ -51,7 +51,7 @@ curl http://192.168.118.132/health
 - **Inventory**: `ansible/inventory`
 - **Global variables**: `ansible/group_vars/all.yml`
 - **Server variables**: `ansible/group_vars/dbservers.yml`, `ansible/group_vars/cacheservers.yml`, etc.
-- **Nginx config**: `/etc/nginx/sites-available/microblog`
+- **Nginx config**: `/etc/nginx/sites-available/yaonet`
 - **Gunicorn service**: `/etc/systemd/system/gunicorn.service`
 - **RQ Worker service**: `/etc/systemd/system/rq-worker.service`
 
@@ -59,12 +59,12 @@ curl http://192.168.118.132/health
 
 ```bash
 # Connect to PostgreSQL
-psql -U microblog_user -d microblog_db -h localhost
+psql -U yaonet_user -d yaonet_db -h localhost
 
 # Database credentials
-Username: microblog_user
-Password: microblog_secure_pwd_2024  # Change in production!
-Database: microblog_db
+Username: yaonet_user
+Password: yaonet_secure_pwd_2024  # Change in production!
+Database: yaonet_db
 ```
 
 ### 🔑 Redis Access
@@ -97,18 +97,18 @@ sudo journalctl -u rq-worker -f
 
 ### 📝 Logs Locations
 
-- Gunicorn: `/var/log/microblog/error.log`, `/var/log/microblog/access.log`
-- Nginx: `/var/log/microblog/nginx/error.log`, `/var/log/microblog/nginx/access.log`
+- Gunicorn: `/var/log/yaonet/error.log`, `/var/log/yaonet/access.log`
+- Nginx: `/var/log/yaonet/nginx/error.log`, `/var/log/yaonet/nginx/access.log`
 - PostgreSQL: `/var/log/postgresql/`
-- Redis: `/var/log/microblog/redis-server.log`
-- RQ Worker: `/var/log/microblog/rq-worker.log`
+- Redis: `/var/log/yaonet/redis-server.log`
+- RQ Worker: `/var/log/yaonet/rq-worker.log`
 
 ### 🚀 Post-Deployment Tasks
 
 1. **Create Admin User:**
    ```bash
-   cd /home/microblog/microblog
-   source /home/microblog/venv/bin/activate
+   cd /home/yaonet/yaonet
+   source /home/yaonet/venv/bin/activate
    flask shell
    > from app import db
    > from app.models import User

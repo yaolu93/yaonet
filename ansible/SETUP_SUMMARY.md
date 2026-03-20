@@ -71,12 +71,12 @@ search01.example.com ansible_host=192.168.1.13
 ### 3. Configure Deployment Variables
 Edit `ansible/group_vars/all.yml` with your settings:
 ```yaml
-git_repo: https://github.com/yourusername/microblog.git
+git_repo: https://github.com/yourusername/yaonet.git
 git_branch: main
 postgres_password: strong_password_here
 redis_password: strong_password_here
 secret_key: flask_secret_key_here
-server_name: microblog.example.com
+server_name: yaonet.example.com
 ```
 
 ### 4. Verify Setup
@@ -217,7 +217,7 @@ systemctl status <service>
 **Problem: Database connection fails**
 ```bash
 # Test connection
-psql -h db-host -U microblog_user -d microblog_db
+psql -h db-host -U yaonet_user -d yaonet_db
 
 # Check PostgreSQL is listening
 ss -tlnp | grep postgres

@@ -3,14 +3,14 @@
 # 用途：停止所有服务，清理应用文件（保留数据库）
 # 使用方式：ansible-playbook undeploy.yml -i inventory
 
-- name: Stop and remove Microblog application
+- name: Stop and remove Yaonet application
   hosts: localhost
   become: yes
   vars:
-    app_user: microblog
-    app_group: microblog
-    app_home: /home/microblog
-    app_path: "{{ app_home }}/microblog"
+    app_user: yaonet
+    app_group: yaonet
+    app_home: /home/yaonet
+    app_path: "{{ app_home }}/yaonet"
     venv_path: "{{ app_home }}/venv"
 
   tasks:
@@ -62,12 +62,12 @@
 
         - name: Remove Nginx site configuration
           file:
-            path: /etc/nginx/sites-available/microblog
+            path: /etc/nginx/sites-available/yaonet
             state: absent
 
         - name: Remove Nginx site enabled link
           file:
-            path: /etc/nginx/sites-enabled/microblog
+            path: /etc/nginx/sites-enabled/yaonet
             state: absent
 
         - name: Remove application virtual environment
@@ -82,7 +82,7 @@
 
         - name: Remove application logs
           file:
-            path: /var/log/microblog
+            path: /var/log/yaonet
             state: absent
 
         - name: Remove application user

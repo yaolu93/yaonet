@@ -2,7 +2,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: web-hpa
-  namespace: microblog
+  namespace: yaonet
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -44,7 +44,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: worker-hpa
-  namespace: microblog
+  namespace: yaonet
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

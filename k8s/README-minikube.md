@@ -33,11 +33,11 @@ kubectl cluster-info
 eval $(minikube docker-env)
 
 # 構建鏡像（將被存儲在 minikube 的 Docker daemon 中）
-cd /home/yao/fromGithub/microblog
-docker build -t microblog:latest .
+cd /home/yao/fromGithub/yaonet
+docker build -t yaonet:latest .
 
 # 驗證鏡像已創建
-docker images | grep microblog
+docker images | grep yaonet
 ```
 
 ### 第 3 步：部署到 Minikube
@@ -62,15 +62,15 @@ kubectl apply -f k8s/7-worker-minikube.yaml   # ← minikube 優化版
 
 ```bash
 # 查看所有 pod 和服務
-kubectl get pods -n microblog
-kubectl get svc -n microblog
+kubectl get pods -n yaonet
+kubectl get svc -n yaonet
 
 # 等待 PostgreSQL StatefulSet 就緒（可能需要 30-60 秒）
-kubectl wait --for=condition=ready pod -l app=postgres -n microblog --timeout=120s
+kubectl wait --for=condition=ready pod -l app=postgres -n yaonet --timeout=120s
 
 # 查看具體 pod 的日誌
-kubectl logs -n microblog -l app=web -f
-kubectl logs -n microblog -l app=postgres --tail=50
+kubectl logs -n yaonet -l app=web -f
+kubectl logs -n yaonet -l app=postgres --tail=50
 ```
 
 ## 訪問應用
@@ -79,7 +79,7 @@ kubectl logs -n microblog -l app=postgres --tail=50
 
 ```bash
 # 本地轉發 web 服務
-kubectl port-forward -n microblog svc/web 8000:8000
+kubectl port-forward -n yaonet svc/web 8000:8000
 
 # 訪問 http://localhost:8000
 ```
@@ -88,7 +88,7 @@ kubectl port-forward -n microblog svc/web 8000:8000
 
 ```bash
 # 獲取 web 服務的外部 IP 或 NodePort
-minikube service web -n microblog
+minikube service web -n yaonet
 
 # 自動在瀏覽器打開
 ```
@@ -100,7 +100,7 @@ minikube service web -n microblog
 MINIKUBE_IP=$(minikube ip)
 
 # 查看 web 服務的 NodePort
-kubectl get svc -n microblog web -o jsonpath='{.spec.ports[0].nodePort}'
+kubectl get svc -n yaonet web -o jsonpath='{.spec.ports[0].nodePort}'
 
 # 訪問 http://<MINIKUBE_IP>:<NodePort>
 # 例如：http://192.168.49.2:30123
@@ -112,48 +112,48 @@ kubectl get svc -n microblog web -o jsonpath='{.spec.ports[0].nodePort}'
 
 ```bash
 # 進入 web pod 的 shell
-kubectl exec -it -n microblog deployment/web -- /bin/bash
+kubectl exec -it -n yaonet deployment/web -- /bin/bash
 
 # 運行 Flask CLI 命令
-kubectl exec -n microblog deployment/web -- flask shell
+kubectl exec -n yaonet deployment/web -- flask shell
 ```
 
 ### 查看實時日誌
 
 ```bash
-# 所有 microblog pods
-kubectl logs -n microblog -f -l app=web
+# 所有 yaonet pods
+kubectl logs -n yaonet -f -l app=web
 
 # 特定 pod
-kubectl logs -n microblog pod/web-xxxxx -f
+kubectl logs -n yaonet pod/web-xxxxx -f
 
 # 跟隨 worker 日誌
-kubectl logs -n microblog -f -l app=worker
+kubectl logs -n yaonet -f -l app=worker
 ```
 
 ### 重建/重啟服務
 
 ```bash
 # 重啟 web deployment（清除舊 pod）
-kubectl rollout restart deployment/web -n microblog
+kubectl rollout restart deployment/web -n yaonet
 
 # 查看滾動更新狀態
-kubectl rollout status deployment/web -n microblog
+kubectl rollout status deployment/web -n yaonet
 
 # 重新部署（修改代碼後重新構建鏡像並重啟）
-docker build -t microblog:latest .
-kubectl rollout restart deployment/web -n microblog
+docker build -t yaonet:latest .
+kubectl rollout restart deployment/web -n yaonet
 ```
 
 ### 刪除/清理
 
 ```bash
-# 刪除整個 microblog 命名空間（包含所有資源）
-kubectl delete namespace microblog
+# 刪除整個 yaonet 命名空間（包含所有資源）
+kubectl delete namespace yaonet
 
 # 或只刪除特定資源
-kubectl delete deployment web -n microblog
-kubectl delete svc postgres -n microblog
+kubectl delete deployment web -n yaonet
+kubectl delete svc postgres -n yaonet
 ```
 
 ## 故障排查
@@ -162,35 +162,35 @@ kubectl delete svc postgres -n microblog
 
 ```bash
 # 查看具體原因
-kubectl describe pod <pod-name> -n microblog
+kubectl describe pod <pod-name> -n yaonet
 
 # 檢查節點資源
 kubectl top nodes
-kubectl top pods -n microblog
+kubectl top pods -n yaonet
 ```
 
 ### Pod CrashLoopBackOff
 
 ```bash
 # 查看前面的日誌（已終止的容器）
-kubectl logs <pod-name> -n microblog --previous
+kubectl logs <pod-name> -n yaonet --previous
 
 # 或查看當前日誌
-kubectl logs <pod-name> -n microblog
+kubectl logs <pod-name> -n yaonet
 ```
 
 ### 無法連接到數據庫
 
 ```bash
 # 驗證 postgres pod 運行中
-kubectl get pods -n microblog -l app=postgres
+kubectl get pods -n yaonet -l app=postgres
 
 # 檢查 postgres 日誌
-kubectl logs -n microblog -l app=postgres -f
+kubectl logs -n yaonet -l app=postgres -f
 
 # 測試連接性（從 web pod 內）
-kubectl exec -it -n microblog deployment/web -- \
-  psql -h postgres -U postgres -d microblog -c "SELECT 1"
+kubectl exec -it -n yaonet deployment/web -- \
+  psql -h postgres -U postgres -d yaonet -c "SELECT 1"
 ```
 
 ## 性能調優（可選）
@@ -215,7 +215,7 @@ minikube start
 ```bash
 minikube addons enable metrics-server
 kubectl top nodes
-kubectl top pods -n microblog
+kubectl top pods -n yaonet
 ```
 
 ## 開發工作流
@@ -225,15 +225,15 @@ kubectl top pods -n microblog
 ```bash
 # 1. 重新構建鏡像
 eval $(minikube docker-env)
-docker build -t microblog:latest .
+docker build -t yaonet:latest .
 
 # 2. 強制重啟 pod（會拉取新鏡像）
-kubectl rollout restart deployment/web -n microblog
-kubectl rollout restart deployment/worker -n microblog
+kubectl rollout restart deployment/web -n yaonet
+kubectl rollout restart deployment/worker -n yaonet
 
 # 3. 監控部署
-kubectl rollout status deployment/web -n microblog
-kubectl logs -f -n microblog -l app=web
+kubectl rollout status deployment/web -n yaonet
+kubectl logs -f -n yaonet -l app=web
 ```
 
 ## 遷移到真實 Kubernetes 集群
@@ -242,8 +242,8 @@ kubectl logs -f -n microblog -l app=web
 
 1. **推送鏡像到仓库**：
    ```bash
-   docker build -t achillesly/microblog:latest .
-   docker push achillesly/microblog:latest
+   docker build -t achillesly/yaonet:latest .
+   docker push achillesly/yaonet:latest
    ```
 
 2. **使用原始清單（6-web.yaml、7-worker.yaml）**：

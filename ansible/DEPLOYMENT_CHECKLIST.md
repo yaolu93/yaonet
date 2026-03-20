@@ -91,8 +91,8 @@ ssh ubuntu@web01.example.com
 ### On Database Server:
 
 - [ ] PostgreSQL is running: `systemctl status postgresql`
-- [ ] Database created: `psql -l | grep microblog_db`
-- [ ] Database user exists: `psql -c "\du" | grep microblog_user`
+- [ ] Database created: `psql -l | grep yaonet_db`
+- [ ] Database user exists: `psql -c "\du" | grep yaonet_user`
 
 ### On Cache Server:
 
@@ -109,7 +109,7 @@ ssh ubuntu@web01.example.com
 1. **SSL Certificates**: Set up Let's Encrypt for HTTPS
    ```bash
    sudo apt install certbot python3-certbot-nginx
-   sudo certbot certonly --standalone -d microblog.example.com
+   sudo certbot certonly --standalone -d yaonet.example.com
    ```
 
 2. **Backup Configuration**: Verify backup scripts are working

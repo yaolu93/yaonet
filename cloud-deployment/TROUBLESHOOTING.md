@@ -95,9 +95,9 @@ echo "REDIS_URL: ${REDIS_URL:0:50}..."
 nano cloud-deployment/.env.cloud
 
 # 重新部署
-gcloud run deploy microblog \
+gcloud run deploy yaonet \
   --project=$GCP_PROJECT_ID \
-  --image=$DOCKER_USERNAME/microblog:latest \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --region=us-central1 \
   --allow-unauthenticated \
   --set-env-vars="\
@@ -128,8 +128,8 @@ RUN_MIGRATIONS=false"
 bash cloud-deployment/scripts/test-cloud-deployment.sh
 
 # 如果本地测试失败，修复后再推送
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest .
-docker push $DOCKER_USERNAME/microblog:latest
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest .
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 第2步: 重新部署
 bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
@@ -142,7 +142,7 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
 ### 步骤1: 运行诊断脚本
 
 ```bash
-cd ~/fromGithub/microblog/cloud-deployment
+cd ~/fromGithub/yaonet/cloud-deployment
 bash scripts/diagnose-deployment.sh
 ```
 
@@ -156,7 +156,7 @@ bash scripts/diagnose-deployment.sh
 
 ```bash
 source cloud-deployment/.env.cloud
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 50
 ```
 
 这会显示容器的启动日志。
@@ -175,8 +175,8 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
 # 在 Upstash 中禁用 IP 白名单
 
 # 3️⃣ 重新推送 Docker 镜像
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest .
-docker push $DOCKER_USERNAME/microblog:latest
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest .
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 4️⃣ 用新镜像重新部署
 bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
@@ -291,9 +291,9 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
 
 # 3️⃣ 重新部署
 source cloud-deployment/.env.cloud
-gcloud run deploy microblog \
+gcloud run deploy yaonet \
   --project=$GCP_PROJECT_ID \
-  --image=$DOCKER_USERNAME/microblog:latest \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --region=us-central1 \
   --allow-unauthenticated \
   --set-env-vars="\
@@ -314,10 +314,10 @@ bash cloud-deployment/scripts/test-cloud-deployment.sh
 
 # 2️⃣ 重新构建镜像
 docker build -f cloud-deployment/Dockerfile \
-  -t $DOCKER_USERNAME/microblog:latest .
+  -t $DOCKER_USERNAME/yaonet:latest .
 
 # 3️⃣ 推送到Docker Hub
-docker push $DOCKER_USERNAME/microblog:latest
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 4️⃣ 部署
 bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
@@ -337,7 +337,7 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
 
 ## 🔗 有用的链接
 
-- **查看日志**: `gcloud run logs read microblog --project=$GCP_PROJECT_ID`
+- **查看日志**: `gcloud run logs read yaonet --project=$GCP_PROJECT_ID`
 - **Cloud Run控制台**: https://console.cloud.google.com/run
 - **Neon文档**: https://neon.tech/docs
 - **Upstash文档**: https://upstash.com/docs
@@ -351,7 +351,7 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
    ```bash
    # 保存诊断结果
    bash cloud-deployment/scripts/diagnose-deployment.sh > /tmp/diagnosis.txt
-   gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50 > /tmp/logs.txt
+   gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 50 > /tmp/logs.txt
    ```
 
 2. 检查日志查看器：
@@ -360,7 +360,7 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
 3. 查看Dockerfile构建日志：
    ```bash
    docker build -f cloud-deployment/Dockerfile \
-     -t $DOCKER_USERNAME/microblog:latest . 2>&1 | tee /tmp/build.log
+     -t $DOCKER_USERNAME/yaonet:latest . 2>&1 | tee /tmp/build.log
    ```
 
 ---

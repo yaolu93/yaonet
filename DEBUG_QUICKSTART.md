@@ -27,22 +27,22 @@ docker compose logs -f web
   ```bash
   python - <<'PY'
   import importlib,traceback
-  try: importlib.import_module('microblog'); print('OK')
+  try: importlib.import_module('yaonet'); print('OK')
   except Exception: traceback.print_exc()
   PY
   ```
-- 语法检查： `python -m py_compile microblog.py`
+- 语法检查： `python -m py_compile yaonet.py`
 - 检查端口占用： `lsof -i :5000` 或 `ss -ltnp | grep :5000`
 
 4) 日志与位置
-- Flask / app 日志： `logs/microblog.log`（脚本会写入）
+- Flask / app 日志： `logs/yaonet.log`（脚本会写入）
 - worker 日志： `logs/rq_worker.log`
-- systemd 日志： `journalctl -u microblog.service -f`
+- systemd 日志： `journalctl -u yaonet.service -f`
 
 5) 重现并调试后台任务
 - 在 `flask shell` 中入队任务：
   ```bash
-  export FLASK_APP=microblog.py
+  export FLASK_APP=yaonet.py
   flask shell
   # shell:
   from app.models import User
@@ -51,7 +51,7 @@ docker compose logs -f web
   ```
 - 在前台运行 worker 以观察执行：
   ```bash
-  rq worker microblog-tasks
+  rq worker yaonet-tasks
   ```
 
 6) 使用 debugpy 远程/本地断点（推荐用 VS Code attach）
@@ -61,13 +61,13 @@ docker compose logs -f web
   # Web: 等待编辑器 attach
   python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m flask run
   # Worker:
-  python -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m rq worker microblog-tasks
+  python -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m rq worker yaonet-tasks
   ```
 - VS Code: 连接到端口 5678（web）或 5679（worker）。
 
 7) 快速定位常见问题
 - 数据库连接错误 -> 检查 `DATABASE_URL`（如果使用 docker-compose，务必在容器网络里运行迁移或使用 `localhost` 指向本机 Postgres）。
-- 导入错误 -> 用上面的 import 测试得到 traceback。重点查看 `app/__init__.py`、`microblog.py`、`config.py`。
+- 导入错误 -> 用上面的 import 测试得到 traceback。重点查看 `app/__init__.py`、`yaonet.py`、`config.py`。
 - 任务不执行 -> 检查 Redis 是否可达，worker 是否在运行，查看 `Task.get_rq_job()` 和 `rq` 日志。
 
 8) 测试

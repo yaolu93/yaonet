@@ -61,11 +61,11 @@ read -p "选择 [1/2]: " DEPLOY_ENV
 
 case $DEPLOY_ENV in
   1)
-    VALUES_FILE="helm/microblog/values-minikube.yaml"
+    VALUES_FILE="helm/yaonet/values-minikube.yaml"
     ENVIRONMENT="Minikube"
     ;;
   2)
-    VALUES_FILE="helm/microblog/values-gke.yaml"
+    VALUES_FILE="helm/yaonet/values-gke.yaml"
     ENVIRONMENT="GKE"
     ;;
   *)
@@ -78,16 +78,16 @@ print_success "选择环境: $ENVIRONMENT"
 
 # Validate Chart syntax
 print_step "4" "验证 Helm Chart 语法"
-if ! helm lint ./helm/microblog > /dev/null 2>&1; then
+if ! helm lint ./helm/yaonet > /dev/null 2>&1; then
     print_error "Chart 语法检查失败！"
-    helm lint ./helm/microblog
+    helm lint ./helm/yaonet
     exit 1
 fi
 print_success "Chart 语法验证通过"
 
 # Create namespace
 print_step "5" "创建 Namespace"
-NAMESPACE="microblog"
+NAMESPACE="yaonet"
 if kubectl get namespace $NAMESPACE > /dev/null 2>&1; then
     print_warning "Namespace '$NAMESPACE' 已存在，跳过创建"
 else
@@ -100,7 +100,7 @@ if [ "$ENVIRONMENT" = "Minikube" ]; then
     print_step "6" "为 Minikube 构建 Docker 镜像"
     eval $(minikube docker-env)
     
-    if docker build -t microblog:latest . > /dev/null 2>&1; then
+    if docker build -t yaonet:latest . > /dev/null 2>&1; then
         print_success "Docker 镜像已构建"
     else
         print_error "Docker 镜像构建失败！"
@@ -110,7 +110,7 @@ fi
 
 # Check if release already exists
 print_step "7" "检查 Helm Release 状态"
-RELEASE_NAME="microblog"
+RELEASE_NAME="yaonet"
 if helm list -n $NAMESPACE | grep -q $RELEASE_NAME; then
     print_warning "Release '$RELEASE_NAME' 已存在"
     read -p "是否升级现有 Release？ (y/n): " UPGRADE
@@ -130,12 +130,12 @@ fi
 # Deploy or upgrade
 print_step "8" "部署应用 ($ACTION)"
 if [ "$ACTION" = "install" ]; then
-    helm install $RELEASE_NAME ./helm/microblog \
+    helm install $RELEASE_NAME ./helm/yaonet \
         -f $VALUES_FILE \
         -n $NAMESPACE \
         --create-namespace
 else
-    helm upgrade $RELEASE_NAME ./helm/microblog \
+    helm upgrade $RELEASE_NAME ./helm/yaonet \
         -f $VALUES_FILE \
         -n $NAMESPACE
 fi
@@ -216,7 +216,7 @@ echo "查看 HPA 状态:"
 echo "  kubectl get hpa -n $NAMESPACE"
 echo ""
 echo "升级应用:"
-echo "  helm upgrade $RELEASE_NAME ./helm/microblog -f $VALUES_FILE -n $NAMESPACE"
+echo "  helm upgrade $RELEASE_NAME ./helm/yaonet -f $VALUES_FILE -n $NAMESPACE"
 echo ""
 echo "回滚到前一版本:"
 echo "  helm rollback $RELEASE_NAME -n $NAMESPACE"
@@ -233,7 +233,7 @@ echo -e "${GREEN}║    Microblog 已成功部署到 $ENVIRONMENT！   ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
 echo ""
 echo "更多信息："
-echo "  - Helm Chart 文档: helm/microblog/README.md"
+echo "  - Helm Chart 文档: helm/yaonet/README.md"
 echo "  - 部署指南: HELM-DEPLOYMENT.md"
 echo "  - 快速参考: HELM-QUICK-START.md"
 echo ""

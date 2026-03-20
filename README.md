@@ -8,7 +8,7 @@
 
 A full-featured Flask social networking application with **multiple deployment options** (Cloud Run, Kubernetes, Helm, Jenkins CI/CD). Features real-time notifications, multi-language support (i18n), user authentication, posts, messaging, and search functionality.
 
-**🚀 Currently running on:** [Google Cloud Run](https://microblog-613015340025.us-central1.run.app)  
+**🚀 Currently running on:** [Google Cloud Run](https://yaonet-613015340025.us-central1.run.app)  
 **📊 Status:** Production-ready with 4 deployment architectures
 
 ---
@@ -54,7 +54,7 @@ A modern social networking platform where users can:
 ## 📂 Project Structure
 
 ```
-microblog/
+yaonet/
 ├── 📁 app/                          # Flask application
 │   ├── __init__.py                  # App factory
 │   ├── models.py                    # SQLAlchemy models
@@ -89,7 +89,7 @@ microblog/
 │   └── *.md                         # K8s deployment guides
 │
 ├── 📁 helm/                         # Helm Charts
-│   └── microblog/                   # Complete Helm chart
+│   └── yaonet/                   # Complete Helm chart
 │       ├── Chart.yaml
 │       ├── values.yaml
 │       ├── values-minikube.yaml
@@ -120,7 +120,7 @@ microblog/
 │   └── tests.py
 │
 ├── Config & Setup
-│   ├── microblog.py                 # Flask entry point
+│   ├── yaonet.py                 # Flask entry point
 │   ├── config.py                    # Flask configuration
 │   ├── requirements.txt             # Python dependencies
 │   ├── babel.cfg                    # i18n configuration
@@ -143,8 +143,8 @@ microblog/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/microblog.git
-cd microblog
+git clone https://github.com/yourusername/yaonet.git
+cd yaonet
 
 # Create Python virtual environment
 python -m venv .venv
@@ -185,7 +185,7 @@ docker-compose exec web flask db upgrade
 ```bash
 # Prerequisites: gcloud, Docker, .env.cloud configured
 
-cd /home/yao/fromGithub/microblog
+cd /home/yao/fromGithub/yaonet
 source cloud-deployment/.env.cloud
 
 # One-command deploy (builds, pushes, deploys with Git SHA tagging)
@@ -207,7 +207,7 @@ bash cloud-deployment/scripts/quick-deploy.sh
 ```
 
 ✅ **Current Status:** Production-ready  
-🔗 **Service URL:** https://microblog-613015340025.us-central1.run.app  
+🔗 **Service URL:** https://yaonet-613015340025.us-central1.run.app  
 📖 **Docs:** [cloud-deployment/DEPLOYMENT_START_HERE.md](cloud-deployment/DEPLOYMENT_START_HERE.md)
 
 ---
@@ -218,7 +218,7 @@ bash cloud-deployment/scripts/quick-deploy.sh
 
 ```bash
 # Install with Helm
-helm install microblog ./helm/microblog/ -f helm/microblog/values.yaml
+helm install yaonet ./helm/yaonet/ -f helm/yaonet/values.yaml
 
 # Or use the helper script
 bash scripts/helm-deploy.sh
@@ -226,8 +226,8 @@ bash scripts/helm-deploy.sh
 
 📖 **Docs:** 
 - [k8s/README.md](k8s/README.md)
-- [helm/microblog/README.md](helm/microblog/README.md)
-- [helm/microblog/HELM-QUICK-START.md](helm/microblog/HELM-QUICK-START.md)
+- [helm/yaonet/README.md](helm/yaonet/README.md)
+- [helm/yaonet/HELM-QUICK-START.md](helm/yaonet/HELM-QUICK-START.md)
 
 ---
 
@@ -260,7 +260,7 @@ Create `.env` or `cloud-deployment/.env.cloud`:
 
 ```bash
 # Flask
-FLASK_APP=microblog.py
+FLASK_APP=yaonet.py
 FLASK_ENV=production
 SECRET_KEY=your-secret-key-here
 
@@ -367,7 +367,7 @@ Background tasks (email, exports) use **RQ (Redis Queue)**.
 
 ```bash
 # Start worker (processes jobs from Redis queue)
-rq worker microblog
+rq worker yaonet
 
 # Monitor jobs
 rq-dashboard  # Web UI at http://localhost:9181
@@ -384,7 +384,7 @@ rq-dashboard  # Web UI at http://localhost:9181
 | [cloud-deployment/QUICK_START.md](cloud-deployment/QUICK_START.md) | 45-minute deployment guide |
 | [k8s/GKE-QUICK-START.md](k8s/GKE-QUICK-START.md) | Google GKE deployment |
 | [k8s/MINIKUBE-QUICK-START.md](k8s/MINIKUBE-QUICK-START.md) | Local K8s development |
-| [helm/microblog/HELM-QUICK-START.md](helm/microblog/HELM-QUICK-START.md) | Helm deployment guide |
+| [helm/yaonet/HELM-QUICK-START.md](helm/yaonet/HELM-QUICK-START.md) | Helm deployment guide |
 | [docs/jenkins.md](docs/jenkins.md) | Jenkins pipeline setup |
 | [docs/DEBUG_QUICKSTART.md](docs/DEBUG_QUICKSTART.md) | Local debugging guide |
 | [docs/MONITORING.md](docs/MONITORING.md) | Prometheus & ELK Stack |

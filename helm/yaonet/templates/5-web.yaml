@@ -58,7 +58,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
           - gunicorn
-          - microblog:app
+          - yaonet:app
           - -b
           - 0.0.0.0:{{ .Values.web.port }}
           - -w

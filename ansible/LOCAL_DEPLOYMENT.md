@@ -31,7 +31,7 @@
 
 ```bash
 # 进入项目目录
-cd /home/yao/fromGithub/microblog
+cd /home/yao/fromGithub/yaonet
 
 # 安装 Ansible 依赖
 pip install ansible paramiko
@@ -52,7 +52,7 @@ vim ansible/group_vars/all.yml
 
 ```yaml
 # 改为你的 GitHub 仓库地址
-git_repo: https://github.com/你的用户名/microblog.git
+git_repo: https://github.com/你的用户名/yaonet.git
 
 # 改为一个随机的 Flask 密钥
 secret_key: your-super-secret-key-change-me-$(date +%s)
@@ -163,11 +163,11 @@ sudo systemctl status rq-worker
 
 ```bash
 # 测试 PostgreSQL
-psql -h localhost -U microblog_user -d microblog_db -c "SELECT NOW();"
-# 需要输入密码：microblog_secure_pwd_2024
+psql -h localhost -U yaonet_user -d yaonet_db -c "SELECT NOW();"
+# 需要输入密码：yaonet_secure_pwd_2024
 
 # 或使用 psql 不询问密码的方式
-PGPASSWORD=microblog_secure_pwd_2024 psql -h localhost -U microblog_user -d microblog_db -c "SELECT NOW();"
+PGPASSWORD=yaonet_secure_pwd_2024 psql -h localhost -U yaonet_user -d yaonet_db -c "SELECT NOW();"
 ```
 
 ### 3️⃣ 测试 Redis 连接
@@ -204,10 +204,10 @@ curl http://localhost/
 
 ```bash
 # Gunicorn 日志
-sudo tail -f /var/log/microblog/error.log
+sudo tail -f /var/log/yaonet/error.log
 
 # Nginx 日志
-sudo tail -f /var/log/microblog/nginx/access.log
+sudo tail -f /var/log/yaonet/nginx/access.log
 
 # 系统日志
 sudo journalctl -u gunicorn -n 50
@@ -275,7 +275,7 @@ ansible-playbook site.yml -i inventory
 
 ```bash
 # 进入项目目录
-cd /home/yao/fromGithub/microblog/ansible
+cd /home/yao/fromGithub/yaonet/ansible
 
 # 1. 测试连接
 ansible all -i inventory -m ping
@@ -375,9 +375,9 @@ sudo apt-get autoclean
 
 ```bash
 # 如果要重新部署（删除旧部署）
-sudo rm -rf /home/microblog/
-sudo -u postgres dropdb microblog_db
-sudo -u postgres dropuser microblog_user
+sudo rm -rf /home/yaonet/
+sudo -u postgres dropdb yaonet_db
+sudo -u postgres dropuser yaonet_user
 redis-cli flushall
 
 # 然后重新运行
@@ -421,7 +421,7 @@ ansible-playbook site.yml -i inventory
 **现在你可以直接运行：**
 
 ```bash
-cd /home/yao/fromGithub/microblog/ansible
+cd /home/yao/fromGithub/yaonet/ansible
 ansible-playbook site.yml -i inventory
 ```
 

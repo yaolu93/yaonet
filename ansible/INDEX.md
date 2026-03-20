@@ -71,7 +71,7 @@ ansible/
 │       ├── handlers/main.yml
 │       └── templates/
 │           ├── nginx.conf.j2
-│           └── microblog.conf.j2
+│           └── yaonet.conf.j2
 ```
 
 ### Variables (5 files)
@@ -128,7 +128,7 @@ search01.example.com ansible_host=192.168.1.13
 ### Step 3: Update Variables
 Edit `ansible/group_vars/all.yml` with your configuration:
 ```yaml
-git_repo: https://github.com/yourusername/microblog.git
+git_repo: https://github.com/yourusername/yaonet.git
 postgres_password: your_secure_password
 redis_password: your_secure_password
 secret_key: your_flask_secret_key
@@ -287,7 +287,7 @@ You now have a **complete, production-ready Ansible deployment infrastructure** 
 - Follow security best practices
 - Monitor and troubleshoot easily
 
-**Location**: `/home/yao/fromGithub/microblog/ansible/`
+**Location**: `/home/yao/fromGithub/yaonet/ansible/`
 
 **Get started**: Read `ansible/SETUP_SUMMARY.md` next!
 

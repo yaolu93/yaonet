@@ -22,7 +22,7 @@
 
 ```bash
 # 1️⃣ 初始化环境配置文件
-cd ~/fromGithub/microblog
+cd ~/fromGithub/yaonet
 bash cloud-deployment/setup-env.sh
 
 # 2️⃣ 编辑配置文件并填入你的凭证
@@ -38,27 +38,27 @@ nano cloud-deployment/.env.cloud
 
 ```bash
 # 1️⃣ 加载环境变量
-cd ~/fromGithub/microblog
+cd ~/fromGithub/yaonet
 source cloud-deployment/.env.cloud
 
 # 2️⃣ 本地测试 (10分钟)
 bash cloud-deployment/scripts/test-cloud-deployment.sh
 
 # 3️⃣ 创建云服务账户（仅第一次）
-# Docker Hub: https://hub.docker.com (注册 → Create Repo "microblog")
+# Docker Hub: https://hub.docker.com (注册 → Create Repo "yaonet")
 # Neon: https://neon.tech (注册 → Create project)
 # Upstash: https://upstash.com (注册 → Create Redis)
 # Google Cloud: https://console.cloud.google.com (创建项目)
 
 # 4️⃣ 推送镜像到Docker Hub
 docker login
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest . && \
-docker push $DOCKER_USERNAME/microblog:latest
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest . && \
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 5️⃣ 部署到Cloud Run
-gcloud run deploy microblog \
+gcloud run deploy yaonet \
   --project=$GCP_PROJECT_ID \
-  --image=$DOCKER_USERNAME/microblog:latest \
+  --image=$DOCKER_USERNAME/yaonet:latest \
   --region=us-central1 \
   --allow-unauthenticated \
   --set-env-vars="DATABASE_URL=$DATABASE_URL,REDIS_URL=$REDIS_URL,FLASK_ENV=production,LOG_TO_STDOUT=true,RUN_MIGRATIONS=true"
@@ -200,11 +200,11 @@ git add .
 git commit -m "新功能描述"
 
 # 2. 构建新镜像并推送
-docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/microblog:latest .
-docker push $DOCKER_USERNAME/microblog:latest
+docker build -f cloud-deployment/Dockerfile -t $DOCKER_USERNAME/yaonet:latest .
+docker push $DOCKER_USERNAME/yaonet:latest
 
 # 3. 在Cloud Run更新（自动使用新镜像）
-gcloud run deploy microblog --image=$DOCKER_USERNAME/microblog:latest --project=$GCP_PROJECT_ID
+gcloud run deploy yaonet --image=$DOCKER_USERNAME/yaonet:latest --project=$GCP_PROJECT_ID
 
 # 完成！无需停机，自动灰度发布
 ```
@@ -282,7 +282,7 @@ bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh
 # 选择: y (禁用数据库迁移)
 
 # 3️⃣ 查看详细日志
-gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50
+gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 50
 
 # 4️⃣ 查看完整故障排除指南
 cat TROUBLESHOOTING.md
@@ -304,7 +304,7 @@ bash cloud-deployment/scripts/fix-cloud-run-startup.sh
 
 ### 快速链接
 - 🔧 **容器启动失败？** → [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md)
-- 📊 **查看日志**: `gcloud run logs read microblog --project=$GCP_PROJECT_ID --limit 50`
+- 📊 **查看日志**: `gcloud run logs read yaonet --project=$GCP_PROJECT_ID --limit 50`
 - 🔍 **诊断工具**: `bash cloud-deployment/scripts/diagnose-deployment.sh`
 - 🛠️ **安全部署**: `bash cloud-deployment/scripts/deploy-to-cloud-run-safe.sh`
 

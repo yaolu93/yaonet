@@ -20,7 +20,7 @@
 ## 📁 Helm Chart 目录结构
 
 ```
-helm/microblog/
+helm/yaonet/
 ├── Chart.yaml                 # Chart 元数据（名称、版本等）
 ├── values.yaml                # 默认配置值（所有可配置参数）
 ├── values-minikube.yaml       # Minikube 环境覆盖值
@@ -52,17 +52,17 @@ bash helm-deploy.sh
 
 #### Minikube
 ```bash
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-minikube.yaml \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-minikube.yaml \
+  -n yaonet \
   --create-namespace
 ```
 
 #### GKE
 ```bash
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  -n yaonet \
   --create-namespace
 ```
 
@@ -97,23 +97,23 @@ helm install microblog ./helm/microblog \
 
 ```bash
 # 修改副本数
-helm upgrade microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
+helm upgrade yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
   --set web.replicaCount=5 \
   --set worker.replicaCount=3 \
-  -n microblog
+  -n yaonet
 
 # 修改镜像标签
-helm upgrade microblog ./helm/microblog \
+helm upgrade yaonet ./helm/yaonet \
   --set image.tag=v2.0 \
-  -n microblog
+  -n yaonet
 
 # 修改多个参数
-helm upgrade microblog ./helm/microblog \
+helm upgrade yaonet ./helm/yaonet \
   --set postgres.storage.size=50Gi \
   --set webAutoscaling.maxReplicas=20 \
   --set ingress.enabled=true \
-  -n microblog
+  -n yaonet
 ```
 
 ## 🔄 工作流程
@@ -122,53 +122,53 @@ helm upgrade microblog ./helm/microblog \
 
 ```bash
 # 修改代码并构建新镜像
-docker build -t microblog:dev .
+docker build -t yaonet:dev .
 
 # 更新部署（使用新镜像）
-helm upgrade microblog ./helm/microblog \
+helm upgrade yaonet ./helm/yaonet \
   --set image.tag=dev \
-  -n microblog
+  -n yaonet
 
 # 查看日志
-kubectl logs -f -n microblog deployment/web
+kubectl logs -f -n yaonet deployment/web
 
 # 如果有问题，立即回滚
-helm rollback microblog -n microblog
+helm rollback yaonet -n yaonet
 ```
 
 ### 2. 配置管理
 
 ```bash
 # 修改 values 文件
-vim helm/microblog/values-gke.yaml
+vim helm/yaonet/values-gke.yaml
 
 # 验证修改（生成 YAML 预览）
-helm template microblog ./helm/microblog -f helm/microblog/values-gke.yaml
+helm template yaonet ./helm/yaonet -f helm/yaonet/values-gke.yaml
 
 # 应用修改
-helm upgrade microblog ./helm/microblog -f helm/microblog/values-gke.yaml -n microblog
+helm upgrade yaonet ./helm/yaonet -f helm/yaonet/values-gke.yaml -n yaonet
 ```
 
 ### 3. 版本管理
 
 ```bash
 # 查看版本历史
-helm history microblog -n microblog
+helm history yaonet -n yaonet
 
 # 输出示例：
 # REVISION  UPDATED                 STATUS    CHART              DESCRIPTION
-# 1         Mon Mar 09 ...          deployed  microblog-1.0.0    Install complete
-# 2         Mon Mar 09 ...          deployed  microblog-1.0.0    Upgrade complete
+# 1         Mon Mar 09 ...          deployed  yaonet-1.0.0    Install complete
+# 2         Mon Mar 09 ...          deployed  yaonet-1.0.0    Upgrade complete
 
 # 回滚到特定版本
-helm rollback microblog 1 -n microblog
+helm rollback yaonet 1 -n yaonet
 ```
 
 ## 🔐 安全配置
 
 ### 修改密钥和密码（必须！）
 
-编辑 `helm/microblog/values-gke.yaml`：
+编辑 `helm/yaonet/values-gke.yaml`：
 
 ```yaml
 secrets:
@@ -189,7 +189,7 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 kubectl create secret generic app-secret \
   --from-literal=SECRET_KEY="$(openssl rand -base64 32)" \
   --from-literal=POSTGRES_PASSWORD="$(openssl rand -base64 32)" \
-  -n microblog
+  -n yaonet
 ```
 
 ## 📈 性能调优
@@ -214,10 +214,10 @@ web:
 启用 HPA 自动扩展 Pod：
 
 ```bash
-helm upgrade microblog ./helm/microblog \
+helm upgrade yaonet ./helm/yaonet \
   --set autoscaling.enabled=true \
   --set webAutoscaling.targetCPUUtilizationPercentage=70 \
-  -n microblog
+  -n yaonet
 ```
 
 ## 📚 相关文档
@@ -226,21 +226,21 @@ helm upgrade microblog ./helm/microblog \
 |------|------|
 | [HELM-DEPLOYMENT.md](./HELM-DEPLOYMENT.md) | 详细的分步部署指南 |
 | [HELM-QUICK-START.md](./HELM-QUICK-START.md) | 快速参考卡片和命令速查表 |
-| [helm/microblog/README.md](./helm/microblog/README.md) | Chart 的完整文档 |
-| [helm/microblog/values.yaml](./helm/microblog/values.yaml) | 所有可配置参数的注释说明 |
+| [helm/yaonet/README.md](./helm/yaonet/README.md) | Chart 的完整文档 |
+| [helm/yaonet/values.yaml](./helm/yaonet/values.yaml) | 所有可配置参数的注释说明 |
 
 ## 🆚 与之前的 YAML 部署的关系
 
 ### 旧方式（保留用于参考）
-- `k8s/1-namespace.yaml` → `helm/microblog/templates/0-namespace.yaml`
-- `k8s/2-configmap.yaml` → `helm/microblog/templates/1-configmap.yaml`
-- `k8s/3-secret.yaml` → `helm/microblog/templates/2-secret.yaml`
-- `k8s/4-postgres-gke.yaml` → `helm/microblog/templates/3-postgres.yaml`
-- `k8s/5-redis-gke.yaml` → `helm/microblog/templates/4-redis.yaml`
-- `k8s/6-web-gke.yaml` → `helm/microblog/templates/5-web.yaml`
-- `k8s/7-worker-gke.yaml` → `helm/microblog/templates/6-worker.yaml`
-- `k8s/8-hpa.yaml` → `helm/microblog/templates/7-hpa.yaml`
-- `k8s/9-ingress-gke.yaml` → `helm/microblog/templates/8-ingress.yaml`
+- `k8s/1-namespace.yaml` → `helm/yaonet/templates/0-namespace.yaml`
+- `k8s/2-configmap.yaml` → `helm/yaonet/templates/1-configmap.yaml`
+- `k8s/3-secret.yaml` → `helm/yaonet/templates/2-secret.yaml`
+- `k8s/4-postgres-gke.yaml` → `helm/yaonet/templates/3-postgres.yaml`
+- `k8s/5-redis-gke.yaml` → `helm/yaonet/templates/4-redis.yaml`
+- `k8s/6-web-gke.yaml` → `helm/yaonet/templates/5-web.yaml`
+- `k8s/7-worker-gke.yaml` → `helm/yaonet/templates/6-worker.yaml`
+- `k8s/8-hpa.yaml` → `helm/yaonet/templates/7-hpa.yaml`
+- `k8s/9-ingress-gke.yaml` → `helm/yaonet/templates/8-ingress.yaml`
 
 > **注意**：原始的 `k8s/` 目录下的 YAML 文件仍然存在，可以继续使用，但建议迁移到 Helm Chart 以获得更好的可维护性。
 
@@ -267,9 +267,9 @@ helm upgrade microblog ./helm/microblog \
 helm help
 
 # Chart 帮助
-helm show chart ./helm/microblog
-helm show values ./helm/microblog
-helm show readme ./helm/microblog
+helm show chart ./helm/yaonet
+helm show values ./helm/yaonet
+helm show readme ./helm/yaonet
 
 # Kubernetes 帮助
 kubectl help

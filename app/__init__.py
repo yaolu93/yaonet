@@ -104,7 +104,7 @@ redis_connections = Gauge(
 )
 
 app_info = Gauge(
-    'microblog_app_info',
+    'yaonet_app_info',
     'Microblog application info',
     ['version']
 )
@@ -123,7 +123,7 @@ def create_app(config_class=Config):
     app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         if app.config['ELASTICSEARCH_URL'] else None
     app.redis = Redis.from_url(app.config['REDIS_URL'])
-    app.task_queue = rq.Queue('microblog-tasks', connection=app.redis)
+    app.task_queue = rq.Queue('yaonet-tasks', connection=app.redis)
 
     # Setup Prometheus metrics middleware
     @app.before_request
@@ -212,7 +212,7 @@ def create_app(config_class=Config):
         else:
             if not os.path.exists('logs'):
                 os.mkdir('logs')
-            file_handler = RotatingFileHandler('logs/microblog.log',
+            file_handler = RotatingFileHandler('logs/yaonet.log',
                                                maxBytes=10240, backupCount=10)
             file_handler.setFormatter(logging.Formatter(
                 '%(asctime)s %(levelname)s: %(message)s '

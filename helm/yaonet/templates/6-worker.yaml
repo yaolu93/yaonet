@@ -37,7 +37,7 @@ spec:
       - name: {{ .Values.worker.name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["rq", "worker", "microblog-tasks"]
+        command: ["rq", "worker", "yaonet-tasks"]
         {{- if .Values.worker.env }}
         env:
         {{- toYaml .Values.worker.env | nindent 8 }}

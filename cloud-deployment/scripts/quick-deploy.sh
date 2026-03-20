@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 # Get environment variables
 DOCKER_USERNAME=${DOCKER_USERNAME:-}
 GCP_PROJECT_ID=${GCP_PROJECT_ID:-}
-SERVICE_NAME="microblog"
+SERVICE_NAME="yaonet"
 REGION="us-central1"
 
 # Print header
@@ -84,7 +84,7 @@ get_git_info() {
 build_and_push() {
     print_step "3/6" "Building and pushing Docker image..."
     
-    cd - > /dev/null 2>&1 || cd /home/yao/fromGithub/microblog
+    cd - > /dev/null 2>&1 || cd /home/yao/fromGithub/yaonet
     
     echo "  Building with tags:"
     echo "    - $IMAGE_TAG"

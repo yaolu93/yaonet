@@ -33,16 +33,16 @@ helm version
 minikube start
 
 # 部署应用
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-minikube.yaml \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-minikube.yaml \
+  -n yaonet \
   --create-namespace
 
 # 获取服务 IP 和端口
-kubectl get svc -n microblog web
+kubectl get svc -n yaonet web
 
 # 在浏览器打开
-minikube service web -n microblog
+minikube service web -n yaonet
 
 # 或者手动打开（使用 NodePort）
 # http://<MINIKUBE_IP>:<NODE_PORT>
@@ -52,11 +52,11 @@ minikube service web -n microblog
 
 ```bash
 # 权限检查
-export PROJECT_ID="microblog-487821"
+export PROJECT_ID="yaonet-487821"
 gcloud config set project $PROJECT_ID
 
 # 创建 GKE 集群（如果还没有）
-gcloud container clusters create microblog-cluster \
+gcloud container clusters create yaonet-cluster \
   --zone=asia-east1-a \
   --num-nodes=2 \
   --machine-type=n1-standard-2 \
@@ -66,23 +66,23 @@ gcloud container clusters create microblog-cluster \
   --workload-pool=${PROJECT_ID}.svc.id.goog
 
 # 获取集群凭据
-gcloud container clusters get-credentials microblog-cluster --zone=asia-east1-a
+gcloud container clusters get-credentials yaonet-cluster --zone=asia-east1-a
 
 # 构建并推送镜像
 export REGION="asia-east1"
-export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/microblog/microblog:latest"
+export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/yaonet/yaonet:latest"
 docker build -t $IMAGE .
 docker push $IMAGE
 
 # 部署应用
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  --set image.repository="${REGION}-docker.pkg.dev/${PROJECT_ID}/microblog/microblog" \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  --set image.repository="${REGION}-docker.pkg.dev/${PROJECT_ID}/yaonet/yaonet" \
+  -n yaonet \
   --create-namespace
 
 # 获取 LoadBalancer 外部 IP
-kubectl get svc -n microblog web
+kubectl get svc -n yaonet web
 
 # 在浏览器中打开（等待 EXTERNAL-IP 分配，约 1-2 分钟）
 # http://<EXTERNAL-IP>
@@ -94,11 +94,11 @@ kubectl get svc -n microblog web
 
 ```bash
 # 验证 YAML 语法
-helm lint ./helm/microblog
+helm lint ./helm/yaonet
 
 # 生成最终 YAML（不部署）
-helm template microblog ./helm/microblog \
-  -f helm/microblog/values-minikube.yaml
+helm template yaonet ./helm/yaonet \
+  -f helm/yaonet/values-minikube.yaml
 ```
 
 ### 2. 预先检查
@@ -113,16 +113,16 @@ kubectl get nodes
 
 ```bash
 # Minikube
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-minikube.yaml \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-minikube.yaml \
+  -n yaonet \
   --create-namespace \
   --debug  # 添加 --debug 查看详细日志
 
 # GKE
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  -n microblog \
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  -n yaonet \
   --create-namespace
 ```
 
@@ -130,30 +130,30 @@ helm install microblog ./helm/microblog \
 
 ```bash
 # 查看安装状态
-helm status microblog -n microblog
+helm status yaonet -n yaonet
 
 # 实时监控 Pod 启动
-kubectl get pods -n microblog -w
+kubectl get pods -n yaonet -w
 
 # 查看详细事件
-kubectl describe pod -n microblog deployment/web
+kubectl describe pod -n yaonet deployment/web
 
 # 查看日志
-kubectl logs -f -n microblog deployment/web
+kubectl logs -f -n yaonet deployment/web
 ```
 
 ### 5. 验证部署成功
 
 ```bash
 # 所有 Pod 应该是 Running
-kubectl get pods -n microblog
+kubectl get pods -n yaonet
 
 # 检查服务
-kubectl get svc -n microblog
+kubectl get svc -n yaonet
 
 # 测试数据库连接
-kubectl exec -it -n microblog deployment/web -- \
-  psql -h postgres -U postgres -d microblog -c "SELECT 1"
+kubectl exec -it -n yaonet deployment/web -- \
+  psql -h postgres -U postgres -d yaonet -c "SELECT 1"
 ```
 
 ## 🔄 更新部署
@@ -162,28 +162,28 @@ kubectl exec -it -n microblog deployment/web -- \
 
 ```bash
 # 编辑 values 文件
-vim helm/microblog/values-gke.yaml
+vim helm/yaonet/values-gke.yaml
 
 # 升级应用
-helm upgrade microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  -n microblog
+helm upgrade yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  -n yaonet
 
 # 监控升级进度
-kubectl rollout status deployment/web -n microblog
+kubectl rollout status deployment/web -n yaonet
 ```
 
 ### 回滚到前一个版本
 
 ```bash
 # 查看版本历史
-helm history microblog -n microblog
+helm history yaonet -n yaonet
 
 # 立即回滚（如果有问题）
-helm rollback microblog -n microblog
+helm rollback yaonet -n yaonet
 
 # 回滚到特定版本
-helm rollback microblog 1 -n microblog
+helm rollback yaonet 1 -n yaonet
 ```
 
 ## 🔐 配置安全
@@ -192,7 +192,7 @@ helm rollback microblog 1 -n microblog
 
 ```bash
 # 方法 1: 编辑 values 文件（不推荐用于生产）
-vim helm/microblog/values-gke.yaml
+vim helm/yaonet/values-gke.yaml
 ```
 
 **values-gke.yaml 中需要修改的部分：**
@@ -222,7 +222,7 @@ head -c 32 /dev/urandom | base64
 kubectl create secret generic app-secret \
   --from-literal=SECRET_KEY="$(openssl rand -base64 32)" \
   --from-literal=POSTGRES_PASSWORD="$(openssl rand -base64 32)" \
-  -n microblog
+  -n yaonet
 
 # 然后需要修改 templates 中的 secret.yaml 来引用外部 secret
 ```
@@ -236,10 +236,10 @@ kubectl create secret generic app-secret \
 eval $(minikube docker-env)
 
 # 构建镜像（无需 push）
-docker build -t microblog:latest .
+docker build -t yaonet:latest .
 
 # Helm 自动使用或手动提供
-helm install microblog ./helm/microblog -f helm/microblog/values-minikube.yaml
+helm install yaonet ./helm/yaonet -f helm/yaonet/values-minikube.yaml
 ```
 
 ### GKE（使用 Artifact Registry）
@@ -250,8 +250,8 @@ gcloud auth configure-docker asia-east1-docker.pkg.dev
 
 # 构建镜像
 export REGION="asia-east1"
-export PROJECT_ID="microblog-487821"
-export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/microblog/microblog:latest"
+export PROJECT_ID="yaonet-487821"
+export IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/yaonet/yaonet:latest"
 
 docker build -t $IMAGE .
 
@@ -259,10 +259,10 @@ docker build -t $IMAGE .
 docker push $IMAGE
 
 # 在 Helm 中使用
-helm install microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
-  --set image.repository="${REGION}-docker.pkg.dev/${PROJECT_ID}/microblog/microblog" \
-  -n microblog
+helm install yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
+  --set image.repository="${REGION}-docker.pkg.dev/${PROJECT_ID}/yaonet/yaonet" \
+  -n yaonet
 ```
 
 ## 📊 监控和日志
@@ -271,23 +271,23 @@ helm install microblog ./helm/microblog \
 
 ```bash
 # Web 日志
-kubectl logs -f -n microblog deployment/web
+kubectl logs -f -n yaonet deployment/web
 
 # Worker 日志
-kubectl logs -f -n microblog deployment/worker
+kubectl logs -f -n yaonet deployment/worker
 
 # PostgreSQL 日志
-kubectl logs -f -n microblog statefulset/postgres
+kubectl logs -f -n yaonet statefulset/postgres
 
 # 所有容器
-kubectl logs -f -n microblog -l app=web --all-containers=true
+kubectl logs -f -n yaonet -l app=web --all-containers=true
 ```
 
 ### Pod 资源使用
 
 ```bash
 # 查看 CPU 和内存使用
-kubectl top pods -n microblog
+kubectl top pods -n yaonet
 
 # 查看节点资源
 kubectl top nodes
@@ -297,26 +297,26 @@ kubectl top nodes
 
 ```bash
 # 查看自动缩放状态
-kubectl get hpa -n microblog
+kubectl get hpa -n yaonet
 
 # 详细 HPA 信息
-kubectl describe hpa web-hpa -n microblog
+kubectl describe hpa web-hpa -n yaonet
 ```
 
 ## 🗑️ 清理资源
 
 ```bash
 # 卸载应用（保留 namespace）
-helm uninstall microblog -n microblog
+helm uninstall yaonet -n yaonet
 
 # 删除 PersistentVolumeClaim（数据）
-kubectl delete pvc -n microblog postgres-storage-postgres-0
+kubectl delete pvc -n yaonet postgres-storage-postgres-0
 
 # 删除 namespace（删除所有资源）
-kubectl delete namespace microblog
+kubectl delete namespace yaonet
 
 # GKE 专用：删除集群
-gcloud container clusters delete microblog-cluster --zone=asia-east1-a
+gcloud container clusters delete yaonet-cluster --zone=asia-east1-a
 ```
 
 ## ❓ 常见问题
@@ -325,35 +325,35 @@ gcloud container clusters delete microblog-cluster --zone=asia-east1-a
 A: 检查资源可用性：
 ```bash
 kubectl describe node  # 查看节点资源
-kubectl describe pvc -n microblog  # 检查存储
+kubectl describe pvc -n yaonet  # 检查存储
 ```
 
 ### Q: ImagePullBackOff 错误？
 A: 检查镜像：
 ```bash
 # Minikube：确保镜像已构建
-docker images | grep microblog
+docker images | grep yaonet
 
 # GKE：确保镜像已推送
-gcloud artifacts docker images list ${REGION}-docker.pkg.dev/${PROJECT_ID}/microblog
+gcloud artifacts docker images list ${REGION}-docker.pkg.dev/${PROJECT_ID}/yaonet
 ```
 
 ### Q: 数据库连接失败？
 ```bash
 # 确保 PostgreSQL Pod 运行中
-kubectl get pod -n microblog postgres-0
+kubectl get pod -n yaonet postgres-0
 
 # 测试连接
-kubectl exec -it -n microblog postgres-0 -- psql -U postgres -d microblog -c "SELECT 1"
+kubectl exec -it -n yaonet postgres-0 -- psql -U postgres -d yaonet -c "SELECT 1"
 ```
 
 ### Q: 如何修改配置而不重新部署？
 使用 `helm upgrade`：
 ```bash
-helm upgrade microblog ./helm/microblog \
-  -f helm/microblog/values-gke.yaml \
+helm upgrade yaonet ./helm/yaonet \
+  -f helm/yaonet/values-gke.yaml \
   --set web.replicaCount=3 \
-  -n microblog
+  -n yaonet
 ```
 
 ## 📚 更多帮助
@@ -363,10 +363,10 @@ helm upgrade microblog ./helm/microblog \
 helm help
 
 # Chart 文本
-helm show chart ./helm/microblog
+helm show chart ./helm/yaonet
 
 # 查看完整的 values
-helm show values ./helm/microblog
+helm show values ./helm/yaonet
 
 # 相关 Kubernetes 命令
 kubectl help
@@ -374,6 +374,6 @@ kubectl help
 
 ## 🔗 相关文档
 
-- [Helm Chart README](./helm/microblog/README.md)
+- [Helm Chart README](./helm/yaonet/README.md)
 - [GKE 部署指南](./k8s/GKE-DEPLOYMENT.md)
 - [Minikube 快速开始](./k8s/MINIKUBE-QUICK-START.md)

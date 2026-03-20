@@ -67,8 +67,8 @@
     chdir: "{{ app_path }}"
     executable: /bin/bash
   environment:
-    FLASK_APP: microblog.py
-    DATABASE_URL: "postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost/microblog_db"
+    FLASK_APP: yaonet.py
+    DATABASE_URL: "postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost/yaonet_db"
   become_user: "{{ app_user }}"
   ignore_errors: yes
 
@@ -132,7 +132,7 @@
 
 - name: Create application log rotation config
   copy:
-    dest: /etc/logrotate.d/microblog
+    dest: /etc/logrotate.d/yaonet
     content: |
       {{ log_dir }}/*.log {
         daily
