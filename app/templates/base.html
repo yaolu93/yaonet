@@ -25,7 +25,10 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('main.index') }}">{{ _('Home') }}</a>
+              <a class="nav-link" aria-current="page" href="{{ url_for('main.home_portal') }}">{{ _('Home') }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="{{ url_for('main.index') }}">{{ _('Feed') }}</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="{{ url_for('main.explore') }}">{{ _('Explore') }}</a>
@@ -33,6 +36,17 @@
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="{{ url_for('main.aboutme') }}">{{ _('About Me') }}</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="{{ url_for('articles.list_articles') }}">{{ _('Articles') }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="{{ url_for('products.list_products') }}">{{ _('Products') }}</a>
+            </li>
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="{{ url_for('products.manage_products') }}">{{ _('Manage Products') }}</a>
+            </li>
+            {% endif %}
             {% if g.search_form %}
             <form class="navbar-form navbar-left" method="get" action="{{ url_for('main.search') }}">
                 <div class="form-group">

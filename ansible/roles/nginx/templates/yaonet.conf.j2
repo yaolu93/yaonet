@@ -77,6 +77,13 @@ server {
         log_not_found off;
     }
 
+    # Product API served by Spring Boot product service
+    location /api/products/ {
+        include /etc/nginx/snippets/proxy-params.conf;
+        proxy_pass {{ products_service_url | default('http://127.0.0.1:8080') }};
+        proxy_redirect off;
+    }
+
     # Main application proxy settings
     location / {
         # Proxy parameters

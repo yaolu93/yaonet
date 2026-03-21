@@ -10,6 +10,7 @@ data:
   PYTHONUNBUFFERED: "1"
   REDIS_URL: redis://redis:6379/0
   DATABASE_URL: postgresql://postgres:example@postgres:5432/yaonet
+  PRODUCTS_SERVICE_URL: http://products:8080
   ELASTICSEARCH_URL: ""
   # RUN_MIGRATIONS: depends on service (web=true, worker=false)
   POSTS_PER_PAGE: "25"

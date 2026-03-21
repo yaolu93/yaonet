@@ -21,6 +21,9 @@ ntp_server: pool.ntp.org
 log_dir: /var/log/yaonet
 log_level: INFO
 
+# Microservices
+products_service_url: http://127.0.0.1:8080
+
 # Security
 ssh_port: 22
 firewall_enabled: yes

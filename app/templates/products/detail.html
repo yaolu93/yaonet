@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-md-8">
+    <a href="{{ url_for('products.list_products') }}" class="text-muted">&larr; Back to Products</a>
+
+    <div class="card shadow-sm mt-3">
+      {% if product.imageUrl %}
+      <img src="{{ product.imageUrl }}" class="card-img-top" alt="{{ product.name }}"
+           style="height:320px;object-fit:cover;">
+      {% endif %}
+      <div class="card-body">
+        <h2>{{ product.name }}</h2>
+        <p class="text-muted">{{ product.description }}</p>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <span class="h4 text-primary mb-0">${{ "%.2f" | format(product.price) }}</span>
+          <span class="badge {{ 'bg-success' if product.stock > 0 else 'bg-danger' }} fs-6">
+            {{ 'In Stock: ' ~ product.stock if product.stock > 0 else 'Out of Stock' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

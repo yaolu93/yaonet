@@ -2,7 +2,8 @@
 Database models and search/pagination mixins for the Microblog app.
 
 Contains SQLAlchemy models for `User`, `Post`, `Message`, `Notification`,
-and `Task`, plus helper mixins `SearchableMixin` and `PaginatedAPIMixin`.
+`Task`, and `Article`, plus helper mixins `SearchableMixin` and
+`PaginatedAPIMixin`.
 """
 
 from datetime import datetime, timezone, timedelta
@@ -367,3 +368,24 @@ class Task(db.Model):
     def get_progress(self):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
+
+
+class Article(db.Model):
+    """Article model for the articles directory feature."""
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    title: so.Mapped[str] = so.mapped_column(sa.String(200), index=True)
+    slug: so.Mapped[str] = so.mapped_column(sa.String(220), index=True, unique=True)
+    summary: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500))
+    body: so.Mapped[str] = so.mapped_column(sa.Text)
+    category: so.Mapped[str] = so.mapped_column(sa.String(64), index=True, default='general')
+    created_at: so.Mapped[datetime] = so.mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc))
+    updated_at: so.Mapped[datetime] = so.mapped_column(
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc))
+    author_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+
+    author: so.Mapped[User] = so.relationship()
+
+    def __repr__(self):
+        return f'<Article {self.title}>'

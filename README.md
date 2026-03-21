@@ -49,6 +49,20 @@ A modern social networking platform where users can:
 - **CI/CD:** Jenkins (optional)
 - **Monitoring:** Prometheus, Grafana, ELK Stack (optional)
 
+### Hybrid Microservices Mode (Flask + Spring Boot)
+
+This project now supports a hybrid microservices layout:
+
+- Flask service: user auth, social feed, About Me page, and article directory
+- Spring Boot service: product catalog APIs at `/api/products`
+- Gateway layer (Nginx): routes product API traffic to the Spring Boot service
+
+New components:
+
+- `app/articles/` and `app/products/` blueprints in Flask
+- `yaonet-products/` Spring Boot project (JPA + PostgreSQL)
+- `k8s/10-products.yaml` deployment/service manifest for product microservice
+
 ---
 
 ## 📂 Project Structure

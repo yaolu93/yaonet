@@ -173,6 +173,12 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
+    from app.articles import bp as articles_bp
+    app.register_blueprint(articles_bp, url_prefix='/articles')
+
+    from app.products import bp as products_bp
+    app.register_blueprint(products_bp, url_prefix='/products')
+
     from app.cli import bp as cli_bp
     app.register_blueprint(cli_bp)
 

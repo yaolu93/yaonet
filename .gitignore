@@ -68,3 +68,14 @@ logs
 # Cloud deployment temporary files
 cloud-deployment/.env.cloud
 cloud-deployment/.env.local
+
+# Java / Spring Boot (yaonet-products)
+yaonet-products/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Java IDE files
+*.iml
+.idea/

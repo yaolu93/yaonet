@@ -48,6 +48,23 @@ def before_request():
     g.locale = str(get_locale())
 
 @bp.route('/', methods=['GET', 'POST'])
+@login_required
+def home_portal():
+    page = request.args.get('page', 1, type=int)
+    recent_posts = db.paginate(
+        current_user.following_posts(),
+        page=page,
+        per_page=5,
+        error_out=False,
+    )
+    return render_template(
+        'home_portal.html',
+        title='Home',
+        recent_posts=recent_posts.items,
+    )
+
+
+@bp.route('/feed', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
