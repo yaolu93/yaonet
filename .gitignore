@@ -79,3 +79,8 @@ yaonet-products/target/
 # Java IDE files
 *.iml
 .idea/
+
+# Eclipse / STS files (yaonet-products)
+yaonet-products/.classpath
+yaonet-products/.factorypath
+yaonet-products/.settings/
