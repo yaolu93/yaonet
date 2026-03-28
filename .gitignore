@@ -84,3 +84,14 @@ yaonet-products/target/
 yaonet-products/.classpath
 yaonet-products/.factorypath
 yaonet-products/.settings/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
