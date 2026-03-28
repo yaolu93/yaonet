@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Quick dev startup script for this Yaonet project
-# Usage: ./scripts/run_dev.sh [--no-worker]
+# Usage: ./scripts/run_dev.sh [--no-worker] [--force] [--map-to-local] [--port <port>]
 
 BASEDIR="$(cd "$(dirname "$0")/.." && pwd)"
 VENV_DIR="$BASEDIR/.venv"
@@ -30,6 +30,8 @@ echo "Activating virtualenv..."
 # shellcheck source=/dev/null
 source "$VENV_DIR/bin/activate"
 
+VENV_PY="$VENV_DIR/bin/python"
+
 # Install requirements only when requirements.txt changed to save time on reruns
 REQ_FILE="$BASEDIR/requirements.txt"
 REQ_SHA_FILE="$VENV_DIR/.requirements_sha"
@@ -46,12 +48,12 @@ fi
 if [ "$REQ_SHA" != "$PREV_SHA" ]; then
   echo "Installing/updating Python requirements..."
   # Ensure pip exists inside the venv (some system Python builds require ensurepip)
-  "$VENV_DIR/bin/python" -m ensurepip --upgrade >/dev/null 2>&1 || true
-  "$VENV_DIR/bin/python" -m pip install --upgrade pip >/dev/null 2>&1 || true
+  "$VENV_PY" -m ensurepip --upgrade >/dev/null 2>&1 || true
+  "$VENV_PY" -m pip install --upgrade pip >/dev/null 2>&1 || true
 
   # Run pip install and capture output so we can detect PEP 668 errors and retry safely
   TMP_OUT=$(mktemp)
-  if "$VENV_DIR/bin/python" -m pip install -r "$REQ_FILE" >"$TMP_OUT" 2>&1; then
+  if "$VENV_PY" -m pip install -r "$REQ_FILE" >"$TMP_OUT" 2>&1; then
     rm -f "$TMP_OUT"
   else
     # If pip failed due to PEP 668 (externally-managed-environment), retry once with
@@ -59,7 +61,7 @@ if [ "$REQ_SHA" != "$PREV_SHA" ]; then
     # Debian/Ubuntu-managed Python installs when modifying packages.
     if grep -qi "externally-managed-environment" "$TMP_OUT" >/dev/null 2>&1; then
       echo "pip install failed with PEP 668; retrying with --break-system-packages (one-time)"
-      if "$VENV_DIR/bin/python" -m pip install --break-system-packages -r "$REQ_FILE" >>"$TMP_OUT" 2>&1; then
+      if "$VENV_PY" -m pip install --break-system-packages -r "$REQ_FILE" >>"$TMP_OUT" 2>&1; then
         rm -f "$TMP_OUT"
       else
         echo "Retry with --break-system-packages also failed. See $TMP_OUT for details." >&2
@@ -83,6 +85,18 @@ export FLASK_APP=yaonet.py
 export FLASK_ENV=development
 export FLASK_DEBUG=1
 
+if ! "$VENV_PY" -m flask --version >/dev/null 2>&1; then
+  echo "error: Flask module is not runnable from $VENV_PY" >&2
+  echo "hint: check requirements installation in the virtualenv" >&2
+  exit 127
+fi
+
+RQ_AVAILABLE=true
+if ! "$VENV_PY" -m rq.cli --help >/dev/null 2>&1; then
+  echo "warning: RQ module is not runnable from $VENV_PY; worker startup will be skipped"
+  RQ_AVAILABLE=false
+fi
+
 if command -v redis-server >/dev/null 2>&1; then
   if ! pgrep -x redis-server >/dev/null 2>&1; then
     echo "Starting redis-server in background..."
@@ -97,14 +111,16 @@ else
 fi
 
 echo "Running DB migrations (flask db upgrade)..."
-flask db upgrade
+"$VENV_PY" -m flask db upgrade
 
 echo "Compiling translations (flask translate compile)..."
-flask translate compile || true
+"$VENV_PY" -m flask translate compile || true
 
 # parse args: support --no-worker and --force
 START_WORKER=true
 FORCE_KILL=false
+BIND_HOST="127.0.0.1"
+BIND_PORT="5000"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --no-worker)
@@ -115,6 +131,19 @@ while [ "$#" -gt 0 ]; do
       FORCE_KILL=true
       shift
       ;;
+    --map-to-local)
+      # Bind on all interfaces so host machine can access VM service via VM IP/port-forward.
+      BIND_HOST="0.0.0.0"
+      shift
+      ;;
+    --port)
+      if [ "$#" -lt 2 ]; then
+        echo "error: --port requires a value" >&2
+        exit 1
+      fi
+      BIND_PORT="$2"
+      shift 2
+      ;;
     *)
       # ignore unknown args
       shift
@@ -122,15 +151,15 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ "$START_WORKER" = true ]; then
+if [ "$START_WORKER" = true ] && [ "$RQ_AVAILABLE" = true ]; then
   echo "Starting RQ worker in background (logs/rq_worker.log)..."
-  nohup rq worker yaonet-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
+  nohup "$VENV_PY" -m rq.cli worker yaonet-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
   echo $! > "$BASEDIR/tmp/rq_worker.pid"
 fi
 
 # helper: find pids listening on port 5000
 pids_on_port() {
-  local port=5000
+  local port="$1"
   local pids=""
   if command -v lsof >/dev/null 2>&1; then
     pids=$(lsof -ti tcp:${port} || true)
@@ -147,9 +176,9 @@ pids_on_port() {
 }
 
 # check port and optionally kill owner processes
-PIDS=$(pids_on_port)
+PIDS=$(pids_on_port "$BIND_PORT")
 if [ -n "$PIDS" ]; then
-  echo "Port 5000 is in use by PID(s): $PIDS"
+  echo "Port $BIND_PORT is in use by PID(s): $PIDS"
   for pid in $PIDS; do
     ps -p $pid -o pid,cmd --no-headers || true
   done
@@ -186,5 +215,15 @@ if [ -n "$PIDS" ]; then
 fi
 
 echo "Starting Flask development server (flask run)..."
-echo "Open http://127.0.0.1:5000"
-flask run --host=127.0.0.1 --port=5000
+if [ "$BIND_HOST" = "0.0.0.0" ]; then
+  VM_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+  echo "Mapping enabled: bound to all interfaces"
+  echo "VM access URL: http://127.0.0.1:$BIND_PORT"
+  if [ -n "${VM_IP:-}" ]; then
+    echo "Host machine URL (bridge/host-only): http://$VM_IP:$BIND_PORT"
+  fi
+  echo "If VM uses NAT, add VM port forwarding: host $BIND_PORT -> guest $BIND_PORT"
+else
+  echo "Open http://127.0.0.1:$BIND_PORT"
+fi
+"$VENV_PY" -m flask run --host="$BIND_HOST" --port="$BIND_PORT"
