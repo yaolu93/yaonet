@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Quick dev shutdown script for this Yaonet project
-# Stops Flask server, RQ worker, and Redis server
+# Stops Flask server, Spring Boot, RQ worker, and Redis server
 # Usage: ./scripts/stop_dev.sh
 
 BASEDIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -73,9 +73,29 @@ else
   echo -e "${YELLOW}✓ Flask is not running${NC}"
 fi
 
-# 2. Stop RQ worker
+# 2. Stop Spring Boot service
 echo ""
-echo "2. Stopping RQ worker..."
+echo "2. Stopping Spring Boot..."
+SPRING_PID_FILE="$BASEDIR/tmp/spring_boot.pid"
+if [ -f "$SPRING_PID_FILE" ]; then
+  SPRING_PID=$(cat "$SPRING_PID_FILE")
+  kill_process "$SPRING_PID" "Spring Boot"
+  rm -f "$SPRING_PID_FILE"
+else
+  # Try to find Spring Boot process anyway
+  SPRING_PIDS=$(pgrep -f "spring-boot:run.*yaonet-products|com\.yaonet\.products\.YaonetProductsApplication" || true)
+  if [ -n "$SPRING_PIDS" ]; then
+    for pid in $SPRING_PIDS; do
+      kill_process "$pid" "Spring Boot"
+    done
+  else
+    echo -e "${YELLOW}✓ Spring Boot is not running${NC}"
+  fi
+fi
+
+# 3. Stop RQ worker
+echo ""
+echo "3. Stopping RQ worker..."
 RQ_PID_FILE="$BASEDIR/tmp/rq_worker.pid"
 if [ -f "$RQ_PID_FILE" ]; then
   RQ_PID=$(cat "$RQ_PID_FILE")
@@ -91,9 +111,9 @@ else
   fi
 fi
 
-# 3. Stop Redis server (only if it was started by the dev script)
+# 4. Stop Redis server (only if it was started by the dev script)
 echo ""
-echo "3. Stopping Redis server..."
+echo "4. Stopping Redis server..."
 if pgrep -x redis-server >/dev/null 2>&1; then
   REDIS_PID=$(pgrep -x redis-server | head -n1)
   read -r -p "Stop Redis server (PID: $REDIS_PID)? [Y/n] " answer

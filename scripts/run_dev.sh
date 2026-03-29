@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Quick dev startup script for this Yaonet project
-# Usage: ./scripts/run_dev.sh [--no-worker] [--force] [--map-to-local] [--port <port>]
+# Usage: ./scripts/run_dev.sh [--no-worker] [--force] [--map-to-local] [--port <port>] [--with-spring] [--spring-port <port>]
 
 BASEDIR="$(cd "$(dirname "$0")/.." && pwd)"
 VENV_DIR="$BASEDIR/.venv"
@@ -116,11 +116,31 @@ echo "Running DB migrations (flask db upgrade)..."
 echo "Compiling translations (flask translate compile)..."
 "$VENV_PY" -m flask translate compile || true
 
+# helper: find pids listening on a given TCP port
+pids_on_port() {
+  local port="$1"
+  local pids=""
+  if command -v lsof >/dev/null 2>&1; then
+    pids=$(lsof -ti tcp:${port} || true)
+  elif command -v ss >/dev/null 2>&1; then
+    # ss output like: users:("/proc/1234/...")
+    pids=$(ss -ltnp "sport = :${port}" 2>/dev/null | awk -F"pid=" '/pid=/ {print $2}' | awk -F"," '{print $1}' | tr '\n' ' ')
+  else
+    # fallback to netstat if available
+    if command -v netstat >/dev/null 2>&1; then
+      pids=$(netstat -ltnp 2>/dev/null | awk '/:'${port}' / {print $7}' | cut -d'/' -f1 | tr '\n' ' ')
+    fi
+  fi
+  echo "$pids"
+}
+
 # parse args: support --no-worker and --force
 START_WORKER=true
 FORCE_KILL=false
 BIND_HOST="127.0.0.1"
 BIND_PORT="5000"
+START_SPRING=false
+SPRING_PORT="8080"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --no-worker)
@@ -144,6 +164,18 @@ while [ "$#" -gt 0 ]; do
       BIND_PORT="$2"
       shift 2
       ;;
+    --with-spring)
+      START_SPRING=true
+      shift
+      ;;
+    --spring-port)
+      if [ "$#" -lt 2 ]; then
+        echo "error: --spring-port requires a value" >&2
+        exit 1
+      fi
+      SPRING_PORT="$2"
+      shift 2
+      ;;
     *)
       # ignore unknown args
       shift
@@ -151,29 +183,94 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
+if [ "$START_SPRING" = true ]; then
+  SPRING_DIR="$BASEDIR/yaonet-products"
+  SPRING_PID_FILE="$BASEDIR/tmp/spring_boot.pid"
+  SPRING_LOG_FILE="$BASEDIR/logs/spring_boot.log"
+
+  if [ ! -f "$SPRING_DIR/pom.xml" ]; then
+    echo "error: Spring project not found at $SPRING_DIR" >&2
+    exit 1
+  fi
+  if ! command -v mvn >/dev/null 2>&1; then
+    echo "error: mvn is not installed or not on PATH; cannot start Spring Boot" >&2
+    exit 127
+  fi
+
+  SPRING_PIDS=$(pids_on_port "$SPRING_PORT")
+  if [ -n "$SPRING_PIDS" ]; then
+    echo "Spring port $SPRING_PORT is in use by PID(s): $SPRING_PIDS"
+    for pid in $SPRING_PIDS; do
+      ps -p $pid -o pid,cmd --no-headers || true
+    done
+    if [ "$FORCE_KILL" = true ]; then
+      echo "--force supplied, killing Spring port owner PID(s): $SPRING_PIDS"
+      kill $SPRING_PIDS || true
+      sleep 0.5
+      for pid in $SPRING_PIDS; do
+        if kill -0 $pid 2>/dev/null; then
+          kill -9 $pid || true
+        fi
+      done
+    else
+      read -r -p "Kill these processes and free Spring port $SPRING_PORT? [y/N] " answer
+      case "$answer" in
+        [Yy]*)
+          kill $SPRING_PIDS || true
+          sleep 0.5
+          for pid in $SPRING_PIDS; do
+            if kill -0 $pid 2>/dev/null; then
+              kill -9 $pid || true
+            fi
+          done
+          ;;
+        *)
+          echo "Will not kill processes. Aborting Spring Boot start."
+          exit 1
+          ;;
+      esac
+    fi
+  fi
+
+  if [ -z "${PRODUCTS_SERVICE_URL:-}" ]; then
+    export PRODUCTS_SERVICE_URL="http://127.0.0.1:$SPRING_PORT"
+    echo "PRODUCTS_SERVICE_URL not set; defaulting to $PRODUCTS_SERVICE_URL"
+  fi
+
+  # Local dev defaults for Spring Boot product service.
+  # Use embedded H2 unless caller explicitly provides PRODUCTS_DB_*.
+  if [ -z "${PRODUCTS_DB_URL:-}" ]; then
+    export PRODUCTS_DB_URL="jdbc:h2:file:$BASEDIR/tmp/yaonet-products-db;MODE=PostgreSQL"
+    export PRODUCTS_DB_USER="sa"
+    export PRODUCTS_DB_PASSWORD=""
+    echo "PRODUCTS_DB_URL not set; defaulting to embedded H2 database"
+  fi
+
+  if [ -z "${FLASK_AUTH_BASE_URL:-}" ]; then
+    export FLASK_AUTH_BASE_URL="http://127.0.0.1:$BIND_PORT/api"
+    echo "FLASK_AUTH_BASE_URL not set; defaulting to $FLASK_AUTH_BASE_URL"
+  fi
+
+  echo "Starting Spring Boot in background on port $SPRING_PORT (logs/spring_boot.log)..."
+  nohup mvn -f "$SPRING_DIR/pom.xml" spring-boot:run \
+    -Dspring-boot.run.arguments="--server.port=$SPRING_PORT" > "$SPRING_LOG_FILE" 2>&1 &
+  SPRING_PID=$!
+  echo "$SPRING_PID" > "$SPRING_PID_FILE"
+
+  # Fail fast if Spring exits immediately (common with DB/config errors).
+  sleep 3
+  if ! kill -0 "$SPRING_PID" 2>/dev/null; then
+    echo "error: Spring Boot failed to start. Last log lines:" >&2
+    tail -n 60 "$SPRING_LOG_FILE" >&2 || true
+    exit 1
+  fi
+fi
+
 if [ "$START_WORKER" = true ] && [ "$RQ_AVAILABLE" = true ]; then
   echo "Starting RQ worker in background (logs/rq_worker.log)..."
   nohup "$VENV_PY" -m rq.cli worker yaonet-tasks > "$BASEDIR/logs/rq_worker.log" 2>&1 &
   echo $! > "$BASEDIR/tmp/rq_worker.pid"
 fi
-
-# helper: find pids listening on port 5000
-pids_on_port() {
-  local port="$1"
-  local pids=""
-  if command -v lsof >/dev/null 2>&1; then
-    pids=$(lsof -ti tcp:${port} || true)
-  elif command -v ss >/dev/null 2>&1; then
-    # ss output like: users:("/proc/1234/...")
-    pids=$(ss -ltnp "sport = :${port}" 2>/dev/null | awk -F"pid=" '/pid=/ {print $2}' | awk -F"," '{print $1}' | tr '\n' ' ')
-  else
-    # fallback to netstat if available
-    if command -v netstat >/dev/null 2>&1; then
-      pids=$(netstat -ltnp 2>/dev/null | awk '/:'${port}' / {print $7}' | cut -d'/' -f1 | tr '\n' ' ')
-    fi
-  fi
-  echo "$pids"
-}
 
 # check port and optionally kill owner processes
 PIDS=$(pids_on_port "$BIND_PORT")
@@ -225,5 +322,9 @@ if [ "$BIND_HOST" = "0.0.0.0" ]; then
   echo "If VM uses NAT, add VM port forwarding: host $BIND_PORT -> guest $BIND_PORT"
 else
   echo "Open http://127.0.0.1:$BIND_PORT"
+fi
+
+if [ "$START_SPRING" = true ]; then
+  echo "Spring Boot API: http://127.0.0.1:$SPRING_PORT/api/products"
 fi
 "$VENV_PY" -m flask run --host="$BIND_HOST" --port="$BIND_PORT"
