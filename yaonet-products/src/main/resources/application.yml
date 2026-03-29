@@ -4,10 +4,25 @@ server:
 spring:
   application:
     name: yaonet-products
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
   datasource:
     url: ${PRODUCTS_DB_URL:jdbc:postgresql://localhost:5432/yaonet_db}
     username: ${PRODUCTS_DB_USER:yaonet_user}
     password: ${PRODUCTS_DB_PASSWORD:yaonet_secure_pwd_2024}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
   jpa:
     hibernate:
       ddl-auto: update
@@ -35,3 +50,23 @@ management:
 flask:
   auth:
     base-url: ${FLASK_AUTH_BASE_URL:http://localhost:5000/api}
+
+yaonet:
+  messaging:
+    enabled: ${MESSAGING_ENABLED:true}
+    kafka:
+      enabled: ${KAFKA_ENABLED:true}
+      topic: ${KAFKA_TOPIC_PRODUCT_EVENTS:yaonet.product.events}
+      dlt-topic: ${KAFKA_TOPIC_PRODUCT_EVENTS_DLT:yaonet.product.events.DLT}
+      consumer-enabled: ${KAFKA_CONSUMER_ENABLED:true}
+      consumer-group: ${KAFKA_CONSUMER_GROUP:yaonet-products-kafka-consumer}
+      dlt-consumer-group: ${KAFKA_DLT_CONSUMER_GROUP:yaonet-products-kafka-dlt-consumer}
+    rabbitmq:
+      enabled: ${RABBITMQ_ENABLED:true}
+      queue: ${RABBITMQ_PRODUCT_EVENTS_QUEUE:yaonet.product.events}
+      dlx: ${RABBITMQ_PRODUCT_EVENTS_DLX:yaonet.product.events.dlx}
+      dlq: ${RABBITMQ_PRODUCT_EVENTS_DLQ:yaonet.product.events.dlq}
+      dlq-routing-key: ${RABBITMQ_PRODUCT_EVENTS_DLQ_ROUTING_KEY:yaonet.product.events.dlq}
+      consumer-enabled: ${RABBITMQ_CONSUMER_ENABLED:true}
+    outbox:
+      dispatch-interval-ms: ${OUTBOX_DISPATCH_INTERVAL_MS:2000}

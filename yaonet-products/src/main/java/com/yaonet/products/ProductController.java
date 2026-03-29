@@ -1,7 +1,9 @@
 package com.yaonet.products;
 
 import jakarta.validation.Valid;
+import com.yaonet.products.messaging.OutboxService;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -13,13 +15,16 @@ public class ProductController {
 
     private final ProductRepository productRepository;
     private final FlaskTokenValidator flaskTokenValidator;
+    private final OutboxService outboxService;
 
     public ProductController(
         ProductRepository productRepository,
-        FlaskTokenValidator flaskTokenValidator
+        FlaskTokenValidator flaskTokenValidator,
+        OutboxService outboxService
     ) {
         this.productRepository = productRepository;
         this.flaskTokenValidator = flaskTokenValidator;
+        this.outboxService = outboxService;
     }
 
     private void requireValidToken(String authorization, String userId) {
@@ -41,6 +46,7 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
     public Product create(
         @Valid @RequestBody Product product,
         @RequestHeader(name = "Authorization", required = false) String authorization,
@@ -48,10 +54,13 @@ public class ProductController {
     ) {
         requireValidToken(authorization, userId);
         product.setId(null);
-        return productRepository.save(product);
+        Product created = productRepository.save(product);
+        outboxService.enqueueCreated(created, userId);
+        return created;
     }
 
     @PutMapping("/{id}")
+    @Transactional
     public Product update(
         @PathVariable Long id,
         @Valid @RequestBody Product payload,
@@ -67,20 +76,23 @@ public class ProductController {
         existing.setPrice(payload.getPrice());
         existing.setStock(payload.getStock());
         existing.setImageUrl(payload.getImageUrl());
-        return productRepository.save(existing);
+        Product updated = productRepository.save(existing);
+        outboxService.enqueueUpdated(updated, userId);
+        return updated;
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
     public void delete(
         @PathVariable Long id,
         @RequestHeader(name = "Authorization", required = false) String authorization,
         @RequestHeader(name = "X-Yaonet-User-Id", required = false) String userId
     ) {
         requireValidToken(authorization, userId);
-        if (!productRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
-        }
+        Product existing = productRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         productRepository.deleteById(id);
+        outboxService.enqueueDeleted(existing.getId(), userId);
     }
 }
