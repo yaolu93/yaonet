@@ -64,6 +64,12 @@ pipeline {
         }
         always {
             echo "🏁 Pipeline finished"
+            echo "🧹 Cleaning up old Docker images..."
+            // 删除旧的 yaonet images，只保留最新的3个
+            sh "docker images ${DOCKER_IMAGE} --format '{{.ID}}' | tail -n +4 | xargs -r docker rmi -f || true"
+            // 清理所有未使用的 images（24小时前的）
+            sh "docker image prune -a -f --filter 'until=24h' || true"
+            echo "✨ Docker cleanup completed"
         }
     }
 }
