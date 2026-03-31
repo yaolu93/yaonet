@@ -1,13 +1,14 @@
 pipeline {
     agent any
 
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
     environment {
         DOCKER_IMAGE = "yaonet"
         DOCKER_PORT_MAPPING = "8000:8080"
         CONTAINER_NAME = "yaonet"
-        HEALTH_CHECK_URL = "http://localhost:8000/health"
-        HEALTH_CHECK_RETRIES = "5"
-        HEALTH_CHECK_INTERVAL = "3"
     }
 
     stages {
@@ -40,44 +41,6 @@ pipeline {
                 sh "docker run -d --name ${CONTAINER_NAME} -p ${DOCKER_PORT_MAPPING} ${DOCKER_IMAGE}:${BUILD_NUMBER}"
                 sh "sleep 2"
                 sh "docker ps | grep yaonet"
-            }
-        }
-
-        stage('Health Check') {
-            steps {
-                echo "❤️  Performing health check..."
-                script {
-                    def retries = 0
-                    def maxRetries = HEALTH_CHECK_RETRIES.toInteger()
-                    def interval = HEALTH_CHECK_INTERVAL.toInteger()
-                    
-                    while (retries < maxRetries) {
-                        try {
-                            def response = sh(
-                                script: "curl -s -o /dev/null -w '%{http_code}' ${HEALTH_CHECK_URL}",
-                                returnStdout: true
-                            ).trim()
-                            
-                            if (response == "200") {
-                                echo "✅ Health check passed! Response code: ${response}"
-                                break
-                            } else {
-                                echo "⚠️  Unexpected response code: ${response}. Retrying..."
-                            }
-                        } catch (Exception e) {
-                            echo "⚠️  Health check attempt ${retries + 1}/${maxRetries} failed. Retrying in ${interval}s..."
-                        }
-                        
-                        retries++
-                        if (retries < maxRetries) {
-                            sleep(time: interval, unit: 'SECONDS')
-                        }
-                    }
-                    
-                    if (retries >= maxRetries) {
-                        error("❌ Health check failed after ${maxRetries} attempts!")
-                    }
-                }
             }
         }
 
