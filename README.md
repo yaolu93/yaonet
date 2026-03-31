@@ -180,7 +180,7 @@ rq worker yaonet-tasks
 - [aboutme.md](aboutme.md)
 - [DEBUG_QUICKSTART.md](DEBUG_QUICKSTART.md)
 - [MONITORING.md](MONITORING.md)
-- [jenkins.md](jenkins.md)
+- [jenkins_docker/README.md](jenkins_docker/README.md)
 
 ## License
 

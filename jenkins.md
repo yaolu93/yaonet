@@ -1,9 +1,16 @@
-docker pull jenkins/jenkins:2.387.2
+# Jenkins Guide Moved
 
-docker run -p 8080:8080 -p 50000:50000 --name jenkins \
-  -u root \
-  -v /mydata/jenkins_home:/var/jenkins_home \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -d jenkins_with_docker
+Jenkins related documentation and runnable scripts have been consolidated into:
 
-ssh -L 8180:127.0.0.1:8180 yaolu@10.15.32.90
+- [jenkins_docker/README.md](jenkins_docker/README.md)
+- [jenkins_docker/start_jenkins.sh](jenkins_docker/start_jenkins.sh)
+- [jenkins_docker/stop_jenkins.sh](jenkins_docker/stop_jenkins.sh)
+- [jenkins_docker/get_admin_password.sh](jenkins_docker/get_admin_password.sh)
+
+Quick start:
+
+```bash
+cd jenkins_docker
+./start_jenkins.sh
+./get_admin_password.sh
+```
