@@ -26,7 +26,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 // 启动新容器
-                sh "docker run -d --name yaonet -p 8000:5000 yaonet:${env.BUILD_NUMBER}"
+                sh "docker run -d --name yaonet -p 8000:8080 yaonet:${env.BUILD_NUMBER}"
             }
         }
     }
