@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+  <div class="mb-2"><span class="badge">{{ article.category }}</span></div>
+  <h1 class="mb-2">{{ article.title }}</h1>
+  <p class="muted">By {{ article.author_username }} · {{ article.created_at|date:'Y-m-d' }}</p>
+  {% if article.summary %}
+    <p class="mb-3 muted">{{ article.summary }}</p>
+  {% endif %}
+  <div>{{ article.body|safe }}</div>
+
+  {% if request.user.is_authenticated and request.user.id == article.author_id %}
+    <div class="mt-3">
+      <a class="btn alt" href="{% url 'articles:edit' slug=article.slug %}">Edit Article</a>
+    </div>
+  {% endif %}
+</div>
+<p><a href="{% url 'articles:list' %}">Back to Articles</a></p>
+{% endblock %}

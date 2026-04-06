@@ -20,6 +20,19 @@ server {
     access_log /var/log/yaonet_access.log;
     error_log /var/log/yaonet_error.log;
 
+    # Route articles module to Django service.
+    location ^~ /articles/ {
+        proxy_pass http://localhost:8001;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location = /articles {
+        return 301 /articles/;
+    }
+
     location / {
         # forward application requests to the gunicorn server
         proxy_pass http://localhost:8000;

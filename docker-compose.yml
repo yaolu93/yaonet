@@ -16,9 +16,9 @@ services:
 
   web:
     build: .
-    command: gunicorn yaonet:app -b 0.0.0.0:8000 -w 4 --log-level debug --access-logfile - --error-logfile -
+    command: gunicorn yaonet:app -b 0.0.0.0:8080 -w 4 --log-level debug --access-logfile - --error-logfile -
     ports:
-      - "8000:8000"
+      - "8000:8080"
     depends_on:
       - db
       - redis
@@ -34,6 +34,22 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - .:/home/yaonet
+    restart: always
+
+  django_articles:
+    build:
+      context: .
+      dockerfile: django_articles/Dockerfile
+    command: sh -c "python manage.py migrate --fake-initial && gunicorn project.wsgi:application -b 0.0.0.0:8001 -w 2"
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=*
+      - DATABASE_URL=postgresql://postgres:example@db:5432/yaonet
+      - PYTHONUNBUFFERED=1
     restart: always
 
   products:
