@@ -32,6 +32,12 @@ services:
       - LOG_TO_STDOUT=true
       - FLASK_DEBUG=1
       - PYTHONUNBUFFERED=1
+      - OTEL_ENABLED=true
+      - OTEL_SERVICE_NAME=yaonet-web
+      - OTEL_SERVICE_NAMESPACE=yaonet
+      - OTEL_ENVIRONMENT=docker
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS:-}
     volumes:
       - .:/home/yaonet
     restart: always
@@ -86,6 +92,9 @@ services:
       - RABBITMQ_PRODUCT_EVENTS_DLQ_ROUTING_KEY=yaonet.product.events.dlq
       - RABBITMQ_CONSUMER_ENABLED=true
       - OUTBOX_DISPATCH_INTERVAL_MS=2000
+      - MANAGEMENT_TRACING_ENABLED=true
+      - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
+      - MANAGEMENT_OTLP_TRACING_ENDPOINT=http://otel-collector:4318/v1/traces
     restart: always
 
   worker:
@@ -100,6 +109,12 @@ services:
       - RUN_MIGRATIONS=false
       - LOG_TO_STDOUT=true
       - PYTHONUNBUFFERED=1
+      - OTEL_ENABLED=true
+      - OTEL_SERVICE_NAME=yaonet-worker
+      - OTEL_SERVICE_NAMESPACE=yaonet
+      - OTEL_ENVIRONMENT=docker
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS:-}
     volumes:
       - .:/home/yaonet
     restart: always
@@ -133,6 +148,19 @@ services:
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
     restart: always
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.105.0
+    profiles: ["observability"]
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4318:4318"
+    environment:
+      - SPLUNK_OTLP_ENDPOINT=${SPLUNK_OTLP_ENDPOINT}
+      - SPLUNK_ACCESS_TOKEN=${SPLUNK_ACCESS_TOKEN}
+    restart: unless-stopped
 
   # prometheus:
   #   image: prom/prometheus:latest

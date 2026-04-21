@@ -1,0 +1,23 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  debug:
+    verbosity: normal
+  otlphttp/splunk:
+    traces_endpoint: ${env:SPLUNK_OTLP_ENDPOINT}
+    headers:
+      X-SF-Token: ${env:SPLUNK_ACCESS_TOKEN}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlphttp/splunk]
