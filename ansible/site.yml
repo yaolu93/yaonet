@@ -20,12 +20,6 @@
   roles:
     - redis
 
-- name: Setup Elasticsearch search servers
-  hosts: searchservers
-  become: yes
-  roles:
-    - elasticsearch
-
 - name: Deploy Flask application
   hosts: webservers
   become: yes
